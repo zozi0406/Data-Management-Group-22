@@ -6,6 +6,7 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(readxl)
 ```
 
 
@@ -14,6 +15,11 @@ library(tidyverse)
 dirs <- list.dirs("./partB_data_files/")
 
 dirs <- dirs[-1]
-files <- lapply(dirs,list.files,pattern="*.xlsx")
+files <- sapply(dirs,list.files,pattern="*.xlsx",USE.NAMES=T)
+files
+#colnames(files) <- colnames(files) %>% str_extract(pattern=regex("(?<=//).+"))
+
+files
+colnames(files)[1] %>% paste0("/",files[1,1]) %>% read_xlsx()[6,]
 
 ```
