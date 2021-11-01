@@ -15,11 +15,43 @@ library(readxl)
 dirs <- list.dirs("./partB_data_files/")
 
 dirs <- dirs[-1]
-files <- sapply(dirs,list.files,pattern="*.xlsx",USE.NAMES=T)
-files
+files <- sapply(dirs,list.files,pattern="*.xlsx",USE.NAMES=T,simplify = F)
+
 #colnames(files) <- colnames(files) %>% str_extract(pattern=regex("(?<=//).+"))
 
-files
-colnames(files)[1] %>% paste0("/",files[1,1]) %>% read_xlsx()[6,]
+
+datalist = list()
+
+for (countrydir in names(files)) {
+
+  for (file in files[[countrydir]]) {
+    
+    excel<-countrydir %>% paste0("/",file) %>% read_xlsx()
+    
+    flow <- excel[2,3] # Flow
+    country <- excel[4,3] # Country
+    
+    rowcount <- dim(excel)[1]
+    colcount <- dim(excel)[2]
+    data<-excel[c(5,seq(7,rowcount-3)),c(1,seq(3,colcount))] # products table, drop empty 2nd column and second row, also remove last three rows with irrelevant information
+    colnames(data) <- data[1,] # Assign first row to names
+    data <- data[-1,] # Drop first row with names
+    colnames(data)[1] <- "year" # Rename first column to year
+    data <- data %>% pivot_longer(2:length(data[1,]),names_to = "product",values_to = "value") # Convert to long format
+    data <- data %>% bind_cols(flow, country) # Add flow and country
+    data <- data %>% select(country,year,flow,product,value) # Reorder columns
+    datalist[[file]] <- data
+  }
+
+}
+
+fulldata <- do.call(bind_rows, datalist)
+fulldata$value <- fulldata$value %>% as.numeric
+fulldata %>% str
+fulldata$country %>% unlist
+
+totalrecords <- fulldata %>% nrow()
+
+productrecords <- fulldata %>% group_by(product) %>% summarise(records=n())
 
 ```
