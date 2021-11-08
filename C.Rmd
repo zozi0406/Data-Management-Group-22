@@ -5,9 +5,18 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(httr)
+library(XML)
+library(tidyverse)
 ```
 
 ```{r}
+res<-GET(add_headers("x-api-version"=2,"Accept"="text/xml"),url="http://api.ratings.food.gov.uk/Ratings")
+decoded<-xmlParse(content(res,type="text")) %>% xmlToList
+ratings<-decoded$ratings$rating
+
+
+ratings
 
 
 ```
