@@ -5,18 +5,47 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(httr)
-library(XML)
+library(xml2)
 library(tidyverse)
+library(rvest)
 ```
 
 ```{r}
-res<-GET(add_headers("x-api-version"=2,"Accept"="text/xml"),url="http://api.ratings.food.gov.uk/Ratings")
-decoded<-xmlParse(content(res,type="text")) %>% xmlToList
-ratings<-decoded$ratings$rating
+link<-"https://data.food.gov.uk/catalog/datasets/38dd8d6a-5ab1-4f50-b753-ab33288e3200"
+
+xmllinks<-read_html(link) %>% html_nodes(".o-dataset-distribution--link") %>% html_attr("href")
+xmllinks<-xmllinks[xmllinks %>% str_detect(".xml$")]
+xmllinks<-xmllinks[xmllinks %>% str_detect("en-GB")]
+
+dir.create("xmldata",showWarnings = F)
+
+firstrun=T
+
+for (link in xmllinks) {
+  
+  filename <- paste0("xmldata/",link %>% str_extract("(?<=/)[^/]+$"))
+  if (!file.exists(filename)){
+    download.file(link,filename)
+  }
+  
+  data <- read_xml(filename) %>% as_list()
+  data$FHRSEstablishment$Header <- NULL
+  data <- data$FHRSEstablishment %>% 
+    as_tibble() %>% 
+    unnest_wider(EstablishmentCollection) %>%
+    unnest_wider(Geocode) %>%
+    unnest(cols=names(.)) %>%
+    unnest(cols=names(.))
+  
+  write_csv(data,"C_out.csv",append=!firstrun)
+  firstrun=F
+}
 
 
-ratings
+
+
 
 
 ```
+
+
