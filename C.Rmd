@@ -19,29 +19,47 @@ xmllinks<-xmllinks[xmllinks %>% str_detect("en-GB")]
 
 dir.create("xmldata",showWarnings = F)
 
-firstrun=T
+xmldatalist=list()
+for (i in 1:length(xmllinks)) {
 
-for (link in xmllinks) {
-  
+  link <- xmllinks[i]
   filename <- paste0("xmldata/",link %>% str_extract("(?<=/)[^/]+$"))
+  
   if (!file.exists(filename)){
     download.file(link,filename)
   }
   
-  data <- read_xml(filename) %>% as_list()
-  data$FHRSEstablishment$Header <- NULL
-  data <- data$FHRSEstablishment %>% 
-    as_tibble() %>% 
-    unnest_wider(EstablishmentCollection) %>%
-    unnest_wider(Geocode) %>%
-    unnest(cols=names(.)) %>%
-    unnest(cols=names(.))
+  nodes <- read_xml(filename) %>% xml_find_all("//EstablishmentDetail")
+  ids<-xml_child(nodes,"FHRSID") %>% xml_text %>% trimws
   
-  write_csv(data,"C_out.csv",append=!firstrun)
-  firstrun=F
+  nodeslength<-xml_length(nodes)
+  
+  nodenames<-xml_children(nodes) %>% xml_name
+  nodevalues<-xml_children(nodes) %>% xml_text %>% trimws
+  
+  df<-tibble(ID=rep(ids,nodeslength),
+                 variable=nodenames,
+                 values=nodevalues) %>%
+    pivot_wider(names_from="variable",values_from="values") %>%
+    add_column(Longitude=xml_child(nodes,search="Geocode") %>% xml_child("Longitude") %>% xml_text,
+               Latitude=xml_child(nodes,search="Geocode") %>% xml_child("Latitude") %>% xml_text,
+               Hygiene=xml_child(nodes,search="Scores") %>% xml_child("Hygiene") %>% xml_text,
+               Structural=xml_child(nodes,search="Scores") %>% xml_child("Structural") %>% xml_text,
+               ConfidenceInManagement=xml_child(nodes,search="Scores") %>% xml_child("ConfidenceInManagement") %>% xml_text)
+  
+  df$Scores<-NULL
+  df$Geocode<-NULL
+  df$ID<-NULL
+  
+  xmldatalist[[filename]]<-df
+  if (i %% 10 == 0){
+    paste0(i, " files processed from a total of ", length(xmllinks),".") %>% print()
+  }
+
 }
-
-
+print("XML parsing finished.")
+ratingsdata<-do.call(bind_rows,xmldatalist) %>% type_convert()
+write_csv(ratingsdata,"C_output.csv")
 
 
 
