@@ -7,3 +7,40 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+library(shiny)
+library(shinydashboard)
+library(DT)
+
+# Define UI for application that draws a histogram
+ui <- dashboardPage(
+  dashboardHeader(title="FHRS Ratings dataset"),
+  dashboardSidebar(
+    sidebarMenu(
+
+    menuItem("Rating", tabName = "Ratingspage", icon = icon("dashboard"))
+    )
+  ),
+  dashboardBody(
+    tabItems(
+      tabItem(tabName = "Ratingspage",h1("Ratings"),
+              fluidRow(
+                column(12,DTOutput("rating"))
+              )
+        
+      )
+    )
+  )
+)
+
+# Define server logic required to draw a histogram
+server <- function(input, output) {
+  output$rating<- renderDT(ratingsdata,filter="top",options=list(pageLength=10))
+
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+
+
+```
