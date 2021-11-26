@@ -10,44 +10,60 @@ library(readxl)
 ```
 
 
-```{r load_data}
+```{r load_data, message=FALSE}
 
+# Find all country directories
 dirs <- list.dirs("./partB_data_files/")
 
-dirs <- dirs[-1]
+#Drop root directory
+dirs <- dirs[-1] 
+
+#Extract file names from every directory and save them in a named list of character vectors
 files <- sapply(dirs,list.files,pattern="*.xlsx",USE.NAMES=T,simplify = F)
 
-#colnames(files) <- colnames(files) %>% str_extract(pattern=regex("(?<=//).+"))
-
-
+#Create empty list 
 datalist = list()
 
-for (countrydir in names(files)) {
 
+#Loop through directories and files within every directory
+for (countrydir in names(files)) {
   for (file in files[[countrydir]]) {
     
-    excel<-countrydir %>% paste0("/",file) %>% read_xlsx()
+    #Read in xlsx file, suppressing "New names" messages
+    suppressMessages(excel<-countrydir %>% paste0("/",file) %>% read_xlsx())
+    #Record sheet dimensions to use as reference points
     rowcount <- dim(excel)[1]
     colcount <- dim(excel)[2]
-    data<-excel[c(5,seq(7,rowcount-3)),c(1,seq(3,colcount))] # products table, drop empty 2nd column and second row, also remove last three rows with irrelevant information
-    colnames(data) <- data[1,] # Assign first row to names
-    data <- data[-1,] # Drop first row with names
-    colnames(data)[1] <- "year" # Rename first column to year
-    data <- data %>% pivot_longer(2:length(data[1,]),names_to = "product",values_to = "value") # Convert to long format
-    data <- data %>% add_column(flow=excel[2,3] %>% unlist %>% unname, country=excel[4,3] %>% unlist %>% unname) # Add flow and country
-    data <- data %>% select(country,year,flow,product,value) # Reorder columns
+    #Extract main table, removing empty row and column in the second row and column of the resulting table
+    data<-excel[c(5,seq(7,rowcount-3)),c(1,seq(3,colcount))]
+    #Use first row as header
+    colnames(data) <- data[1,]
+    #Drop header names from the dataframe
+    data <- data[-1,] 
+    #Rename first column to year
+    colnames(data)[1] <- "year"
+    #Convert to long format
+    data <- data %>% pivot_longer(2:length(data[1,]),names_to = "product",values_to = "value") 
+    #Add flow and country from the sheet
+    data <- data %>% add_column(flow=excel[2,3] %>% unlist %>% unname, country=excel[4,3] %>% unlist %>% unname) 
+    #Reorder columns to fit format requirements
+    data <- data %>% select(country,year,flow,product,value)
+    #Add resulting dataframe to the list
     datalist[[file]] <- data
   }
-
 }
 
+#Bind dataframes together
 fulldata <- do.call(bind_rows, datalist)
+
+#Change to numeric data type and simultaneously coerce ".." values to NA
 fulldata$value <- fulldata$value %>% as.numeric
-fulldata %>% str
 
-
+#Count total rows in the dataframe and display
 (totalrecords <- fulldata %>% nrow())
 
-(productrecords <- fulldata %>% group_by(product) %>% summarise(records=n()))
-
+#Group data by product and print number of records. 
+productrecords <- fulldata %>% group_by(product) %>% summarise(records=n())
+#In case of every product, there are 8830 records.
+(productrecords %>% count(records))
 ```
