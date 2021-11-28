@@ -146,7 +146,7 @@ CREATE TABLE Room_allocation (
 -- Queries
 -- 1. The total spent for the customer for a particular stay (checkout invoice).
 
---Assuming total spent includes taxes paid.
+-- Assuming total spent includes taxes paid.
 SELECT S.Guest_id, S.Stay_id, SUM(IP.Amount) FROM Stay S 
 INNER JOIN Invoice I ON S.Stay_id = I.Stay_id 
 INNER JOIN Invoice_payments IP ON IP.Invoice_id = I.Invoice_id 
@@ -156,11 +156,12 @@ WHERE S.Stay_id = 12345;
 
 
 
---The most valuable customers in (a) the last two months, (b) past year and (c) from the beginning of the records.
+-- 2. The most valuable customers in (a) the last two months, (b) past year and (c) from the beginning of the records.
 
---a
+-- a
 
 -- Assuming last two months means to count all stays that started in the last two months.
+-- Assuming value means total spent including taxes paid
 
 SELECT G.Guest_id, SUM(IP.Amount) AS Total_spent FROM Stay S 
 INNER JOIN Guest G ON G.Guest_id = S.Guest_id
@@ -171,7 +172,7 @@ WHERE date(S.Arrival_date) >= date('now',"-2 months")
 GROUP BY G.Guest_id
 ORDER BY Ex_tax_value DESC LIMIT 10;
 
---b
+-- b
 
 SELECT G.Guest_id, SUM(IP.Amount) AS Total_spent FROM Stay S 
 INNER JOIN Guest G ON G.Guest_id = S.Guest_id
@@ -183,7 +184,7 @@ WHERE date(S.Arrival_date) >= date('now',"-1 year")
 GROUP BY G.Guest_id
 ORDER BY Ex_tax_value DESC LIMIT 10;
 
---c
+-- c
 
 SELECT G.Guest_id, SUM(IP.Amount) AS Total_spent FROM Stay S 
 INNER JOIN Guest G ON G.Guest_id = S.Guest_id
@@ -193,14 +194,14 @@ GROUP BY G.Guest_id
 ORDER BY Ex_tax_value DESC LIMIT 10;
 
 
--- Which are the top countries where our customers come from ?
+-- 3. Which are the top countries where our customers come from ?
 
 SELECT Country, COUNT(Guest_id) AS Frequency FROM Guest 
 GROUP BY Country
 ORDER BY Frequency DESC LIMIT 10;
 
 
--- How much did the hotel pay in referral fees for each of the platforms that we have contracted with?
+-- 4. How much did the hotel pay in referral fees for each of the platforms that we have contracted with?
 
 
 SELECT C.Channel_id, C.Channel_name, SUM(S.Channel_fee) AS Total_fees FROM Booking_channel C
@@ -210,32 +211,33 @@ WHERE date(S.Departure_date) <= date("now","start of month","-1 day")
 GROUP BY C.Channel_name;
 
 
---What is the utilization rate for each hotel (that is the average billable days of a hotel specified as the average utilization of room bookings for the last 12 months)
+-- 5. What is the utilization rate for each hotel (that is the average billable days of a hotel specified as the average utilization of room bookings for the last 12 months)
 
 SELECT Name, Hotel_id, AVG(Utilization) FROM
     (
     SELECT H.Name, H.Hotel_id, R.Room_name_or_number, COUNT(RA.date)/365.0 AS Utilization FROM 
     Room_allocation RA  
-    --Only joining to retrieve hotel name:
+    -- Only joining to retrieve hotel name:
     INNER JOIN Room R on RA.(Hotel_id, Room_name_or_number) = R.(Hotel_id, Room_name_or_number)
     INNER JOIN Hotel H on R.Hotel_id = H.Hotel_id
     WHERE date(RA.Date) >= date("now","-1 year")
-    --To ensure that only stays count as utilised days:
+    -- To ensure that only stays count as utilised days:
     AND Stay_id NOT NULL
     GROUP BY R.Hotel_id, R.Room_name_or_number
     )
 GROUP BY Hotel_id;
 
 
---Calculate the Customer Value in terms of total spent for each customer before the current booking.
+-- 6. Calculate the Customer Value in terms of total spent for each customer before the current booking.
 
---Assuming total spent includes taxes paid
---Stay only includes previous stays, so no need to filter anything.
+-- Assuming total spent includes taxes paid
+-- Stay only includes previous stays, so no need to filter anything.
 SELECT S.Guest_id, SUM(IP.Amount) AS Total_spent FROM Stay S
 INNER JOIN Invoice I ON I.Stay_id=S.Stay_id 
 INNER JOIN Invoice_payments IP ON IP.Invoice_id = I.Invoice_id
---Guest_id could be specified if looking for specific
---WHERE S.Guest_id = 12345
 GROUP BY S.Guest_id
-
+-- Only include Guest_ids with bookings.
+HAVING S.Guest_id IN (SELECT DISTINCT Guest_id FROM Reservation);
+-- Guest_id could be specified if looking for specific
+-- HAVING S.Guest_id = 12345
 
