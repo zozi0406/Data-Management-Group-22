@@ -154,15 +154,12 @@ INNER JOIN Invoice_payments IP ON IP.Invoice_id = I.Invoice_id
 WHERE S.Stay_id = 12345;
 
 
-
-
 -- 2. The most valuable customers in (a) the last two months, (b) past year and (c) from the beginning of the records.
 
 -- a
 
 -- Assuming last two months means to count all stays that started in the last two months.
 -- Assuming value means total spent including taxes paid
-
 SELECT G.Guest_id, SUM(IP.Amount) AS Total_spent FROM Stay S 
 INNER JOIN Guest G ON G.Guest_id = S.Guest_id
 INNER JOIN Invoice I ON S.Stay_id = I.Stay_id 
@@ -240,4 +237,5 @@ GROUP BY S.Guest_id
 HAVING S.Guest_id IN (SELECT DISTINCT Guest_id FROM Reservation);
 -- Guest_id could be specified if looking for specific
 -- HAVING S.Guest_id = 12345
+
 
