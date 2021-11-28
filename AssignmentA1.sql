@@ -160,7 +160,8 @@ WHERE S.Stay_id = 12345;
 
 --a
 
--- Assuming last two months means to count all stays that started in the last two months.
+--Assuming last two months means to count all stays that started in the last two months.
+--Assuming value means total spent including taxes paid
 
 SELECT G.Guest_id, SUM(IP.Amount) AS Total_spent FROM Stay S 
 INNER JOIN Guest G ON G.Guest_id = S.Guest_id
@@ -234,8 +235,9 @@ GROUP BY Hotel_id;
 SELECT S.Guest_id, SUM(IP.Amount) AS Total_spent FROM Stay S
 INNER JOIN Invoice I ON I.Stay_id=S.Stay_id 
 INNER JOIN Invoice_payments IP ON IP.Invoice_id = I.Invoice_id
---Guest_id could be specified if looking for specific
---WHERE S.Guest_id = 12345
 GROUP BY S.Guest_id
-
+--Only include Guest_ids with bookings.
+HAVING S.Guest_id IN (SELECT DISTINCT Guest_id FROM Reservation);
+--Guest_id could be specified if looking for specific
+--HAVING S.Guest_id = 12345
 
