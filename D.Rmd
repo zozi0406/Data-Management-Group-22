@@ -14,7 +14,7 @@ library(DT)
 
 # Define UI for application that draws a histogram
 ui <- dashboardPage(
-  dashboardHeader(title="FHRS Ratings dataset"),
+  dashboardHeader(title="FHRS Ratings"),
   dashboardSidebar(
     sidebarMenu(
 
