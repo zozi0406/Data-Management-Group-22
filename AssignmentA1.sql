@@ -167,7 +167,7 @@ INNER JOIN Invoice_payments IP ON IP.Invoice_id = I.Invoice_id
 -- Based on https://www.sqlite.org/lang_datefunc.html
 WHERE date(S.Arrival_date) >= date('now',"-2 months")
 GROUP BY G.Guest_id
-ORDER BY Ex_tax_value DESC LIMIT 10;
+ORDER BY Total_spent DESC LIMIT 10;
 
 -- b
 
@@ -179,7 +179,7 @@ INNER JOIN Invoice_payments IP ON IP.Invoice_id = I.Invoice_id
 -- If all stays since the start of the year are meant, "-1 year" would be replaced by "start of year".
 WHERE date(S.Arrival_date) >= date('now',"-1 year")
 GROUP BY G.Guest_id
-ORDER BY Ex_tax_value DESC LIMIT 10;
+ORDER BY Total_spent DESC LIMIT 10;
 
 -- c
 
@@ -188,7 +188,7 @@ INNER JOIN Guest G ON G.Guest_id = S.Guest_id
 INNER JOIN Invoice I ON S.Stay_id = I.Stay_id 
 INNER JOIN Invoice_payments IP ON IP.Invoice_id = I.Invoice_id 
 GROUP BY G.Guest_id
-ORDER BY Ex_tax_value DESC LIMIT 10;
+ORDER BY Total_spent DESC LIMIT 10;
 
 
 -- 3. Which are the top countries where our customers come from ?
@@ -200,11 +200,11 @@ ORDER BY Frequency DESC LIMIT 10;
 
 -- 4. How much did the hotel pay in referral fees for each of the platforms that we have contracted with?
 
-
+-- Assuming arrival date on the last day of the month means channel fees are charged for that month still.
 SELECT C.Channel_id, C.Channel_name, SUM(S.Channel_fee) AS Total_fees FROM Booking_channel C
 INNER JOIN Stay S on S.Channel_id=C.Channel_id
 -- Only include stays that finished on or before the end of the last month
-WHERE date(S.Departure_date) <= date("now","start of month","-1 day")
+WHERE date(S.Arrival_date) <= date("now","start of month","-1 day")
 GROUP BY C.Channel_name;
 
 

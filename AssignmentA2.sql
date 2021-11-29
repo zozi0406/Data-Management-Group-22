@@ -1,4 +1,4 @@
--- ow many customers have stopped bringing their cars after the first encounter with the dealer ?
+-- How many customers have stopped bringing their cars after the first encounter with the dealer ?
 
 -- Assuming Customers have only one car
 SELECT COUNT(*) AS Churns FROM (
