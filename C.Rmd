@@ -116,7 +116,15 @@ if (!RSQLite::dbExistsTable(con,"fact_Rating")) {
   RSQLite::dbWriteTable(con,"dim_LocalAuthority",dim_LocalAuthority)
   RSQLite::dbWriteTable(con,"dim_BusinessType",dim_BusinessType)
   RSQLite::dbWriteTable(con,"dim_RatingTypes",dim_RatingTypes)
+  
+  saveRDS(ratingsdata,"C_output.rds")
+} else {
+  
+  ratingsdata<-readRDS("C_output.rds")
 } 
+
+
+
 
 #Disconnect from database
 RSQLite::dbDisconnect(con)
