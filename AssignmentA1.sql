@@ -16,7 +16,6 @@ CREATE TABLE Guest (
   First_name TEXT NOT NULL,
   Middle_name TEXT,
   Last_name TEXT NOT NULL,
-  UNIQUE (Post_code, City, State, Street_name, Street_number, Country)
 );
 
 CREATE TABLE Reservation (
