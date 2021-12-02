@@ -207,16 +207,14 @@ server <- function(input, output, session) {
             
         }
     )
-    output$Play3 <- renderPlot(
+     output$Play3 <- renderPlot(
         {
-            dfPlay3 <- filter(dfPlay1,SchemeType=="FHRS"& RatingValue==input$RatingValues3)
-            dfPlay3 <-
-                dfPlay3 %>% group_by(LocalAuthorityName,RatingValue) %>% count(RatingValue,sort = TRUE)  %>% head(n = 10)
-          
-            plt4 <-ggplot(dfPlay3, aes(x = reorder(LocalAuthorityName, -n), y = n)) +
-                geom_bar(stat = "identity")+labs(y="Count",x="Local Authority Name")
-            
-           plt4
+            dfPlay4 <- filter(dfPlay1,SchemeType=="FHRS"& RatingValue==input$RatingValues3)
+                      
+            dfPlay4 <-  dfPlay4 %>% group_by(LocalAuthorityName)%>% count(vars='LocalAuthorityName')
+            dfPlay4 <- arrange(dfPlay4,desc(freq)) %>% head(n=10)
+            ggplot(dfPlay4, aes(x = reorder(LocalAuthorityName, - freq), y = freq)) +
+                geom_bar(stat = "identity")+ labs(y="Count",x="Local Authority Name")
             
             
             
