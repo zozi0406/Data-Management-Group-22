@@ -5,6 +5,19 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(DBI)
+library(RSQLite)
+library(shiny)
+library(shinydashboard)
+library(shinythemes)
+library(shinyWidgets)
+library(ggplot2)
+library(gridExtra)
+library(grid)
+require(scales)
+library(plotly)
+library(tidyverse)
+library(lubridate)
 ```
 
 ```{r}
@@ -16,227 +29,250 @@ knitr::opts_chunk$set(echo = TRUE)
 #
 #    http://shiny.rstudio.com/
 #
-library(DBI)
-library(RSQLite)
-library(shiny)
-library(shinydashboard)
-library(shinythemes)
-library(shinyWidgets)
-library(dplyr)
-library(ggplot2)
-library(gridExtra)
-library(grid)
-require(scales)
-library(plotly)
 
+
+# Read in dataframe from part C
+ratingsdata<-readRDS("C_output.rds")
+
+paste(object.size(ratingsdata) / 1048576,"MB") %>% print
+# As the dataframe is only about 218 MB, loading it into memory is easily possible on any modern computer 
+# Keeping the object in memory and running dplyr code proved faster than SQL in practice.
+
+# SQL code provided for illustration
 # Conencting to database
 db <- dbConnect(SQLite(), 'ratings.db')
-# getting all years with rating
-Years <- dbGetQuery(db, 'SELECT distinct Year from dim_Date')
 
-# getting unique business type and Id forfilters
-BusinessTypeId <- dbGetQuery(db, 'SELECT distinct BusinessType,BusinessTypeID from dim_BusinessType')
+# getting unique business type and Id for filters
 
+BusinessTypeId <- ratingsdata %>% select(BusinessType,BusinessTypeID) %>% distinct()
+# BusinessTypeId <- dbGetQuery(db, 'SELECT DISTINCT BusinessType,BusinessTypeID FROM dim_BusinessType;')
 
-ui <- fluidPage(
-    dashboardHeader(title = "Basic dashboard"),
-    navbarPage(
-        title = 'Dashboard',
-        windowTitle = 'Dashboard', 
-        position = 'fixed-top', 
-        collapsible = TRUE, 
-        theme = shinytheme('cosmo'), 
+    
+ui <- dashboardPage(
+  
+        dashboardHeader(
+          title = "Ratings dashboard"),
+    
+        dashboardSidebar(
+          sidebarMenu(
+            menuItem("Ratings over time", tabName = "Tab1", icon = icon("th")),
+            menuItem("Sub-scores by ratings", tabName = "Tab2", icon = icon("th")),
+            menuItem("Top local authorities by rating", tabName = "Tab3", icon = icon("th"))
+          )
         ),
-   
-    
-        mainPanel(
-            tabsetPanel(
+        dashboardBody(
+          tabItems(
+            tabItem(tabName = "Tab1",
+              fluidRow(
+                    
+                # Business type distribution plot
+                box(title ="Rating Value slider",
+                   sliderInput(inputId = 'RatingValues','Rating Values:',0,5,2)),
+                box(title="Business Type select",
+                   selectInput(
+                         inputId = 'BusinessType',
+                         label = 'Business Types:',
+                         choices = BusinessTypeId$BusinessType,
+                         selected="Restaurant/Cafe/Canteen"
+                ))),
+              fluidRow(
+                box(width=12,
+                         plotlyOutput(
+                          outputId = 'Play1'
+                         )
+              ))),
+              
+                # Sub-score distribution tab
+                tabItem(tabName ="Tab2",
+                         fluidRow(
+                    
+                            # Business type distribution plot
+                            box(title ="Rating Value slider",
+                                     
+                                   sliderInput(
+                               inputId = 'RatingValues2',
+                               'Rating Values:',
+                               0,
+                               5,
+                               3
+                             ))),
+                        fluidRow(
+                            box(width=12,
+                               plotlyOutput(outputId = 'Play2',height = "500px",width="100%")
+                             )
+                )),
                 
-                
-                # This tab will handle the plot1 with Business type as a selector and rating value as another selector
-                tabPanel(title ="Trend of Business types",
-                         inputPanel(
-                             selectInput(
-                                 inputId = 'RatingValues',
-                                 label = 'Rating Values:',
-                                 choices = c(5,4,3,2,1,0),
-                                 selected =5
-                             )),
-                         inputPanel(
-                             selectInput(
-                                 inputId = 'BusinessTypeID',
-                                 label = 'Business Types:',
-                                 choices = BusinessTypeId$BusinessType,
-                                 selected="Farmers/growers"
-                             ))
-                         ,
+                # Local authority rating percentage tab
+                tabItem(tabName ="Tab3",
+                        fluidRow(
+                          box(title="Rating Value Slider",
+                                sliderInput(
+                               inputId = 'RatingValues3',
+                               'Rating Values:',
+                               0,
+                               5,
+                               0
+                          ))),
                          
-                         plotOutput(
-                    outputId = 'Play1'
-                ),icon = icon("table"),
-                ),
-                
-                # This tab will handle the plot2 with  rating value as selector
-                tabPanel(title ="Sub-score distributions",
-                         
-                         inputPanel(
-                             selectInput(
-                                 inputId = 'RatingValues2',
-                                 label = 'Rating Values:',
-                                 choices = c(5,4,3,2,1,0),
-                                 selected =5
-                             )),
-                         
-                         
-                         
-                         plotOutput(
-                             outputId = 'Play2',height = "500px",width="100%"  
-                         ),icon = icon("table")
-                ),
-           
-                # This tab will handle the plot2 with  rating value as selector
-                tabPanel(title ="Top 10 local Authority",
-                         
-                         inputPanel(
-                             selectInput(
-                                 inputId = 'RatingValues3',
-                                 label = 'Rating Values:',
-                                 choices = c(5,4,3,2,1,0),
-                                 selected =5
-                             )),
-                         
-                         
-                         
-                         plotOutput(
-                             outputId = 'Play3',height = "500px",width="100%"  
-                         ),icon = icon("table")
-                ),
-                
-        
-        
-    )
+                         fluidRow(
+                           box(width=12,
+                            plotlyOutput(
+                               outputId = 'Play3',height = "500px",width="100%")  
+                        ))
+                )
+          )
+        )
 )
-)
-    
-
 
 
 server <- function(input, output, session) {
   
 # 1. This plot is implementing Percentage of rating under Selected Category over the years
 
-# QUERY
-  
-#  'Select F.BusinessTypeID,F.Ratingkey,SchemeType,D.RatingValue, B.BusinessType, Date.Year,L.LocalAuthorityName from fact_rating F join dim_RatingTypes D on 
-# F.RatingKey =D.RatingKey join dim_BusinessType B on B.BusinessTypeID= F.BusinessTypeID
-# join dim_Date date on Date.RatingDate =F.RatingDate join dim_LocalAuthority L on L.LocalAuthorityCode=F.LocalAuthorityCode 
-# WHERE SchemeType=="FHRS" and  BusinessType==input$BusinessTypeID and RatingValue==input$RatingValues'
-   
-     dfPlay1 <- dbGetQuery(db,
-        statement = 
-            'Select F.BusinessTypeID,F.Ratingkey,SchemeType,D.RatingValue, B.BusinessType, Date.Year,L.LocalAuthorityName from fact_rating F join dim_RatingTypes D on 
-                F.RatingKey =D.RatingKey join dim_BusinessType B on B.BusinessTypeID= F.BusinessTypeID
-                join dim_Date date on Date.RatingDate =F.RatingDate join dim_LocalAuthority L on L.LocalAuthorityCode=F.LocalAuthorityCode
-                ')
 # Plotting a graph using ggplot showing year vs percentage of rating under each category  
-    output$Play1 <- renderPlot(
+    output$Play1 <- renderPlotly(
         {
-           
-            
-            df <- filter(dfPlay1,SchemeType=="FHRS"& BusinessType==input$BusinessTypeID & RatingValue==input$RatingValues)
-            
-            output <-ggplot(df, aes(x=year))+
-                geom_bar(aes(y = (..count..)/sum(..count..)),fill="steelblue") + 
-                ## version 3.0.0
-                scale_y_continuous(labels=percent) +
-                labs(caption = "This plot shows trend of selected category for a particular rating",
-                     x ="Year", y = "Percentage of rating under Selected Category")
-            output
-               
+            df <- ratingsdata %>% 
+              filter(SchemeType=="FHRS"& BusinessType==input$BusinessType) %>% 
+              select(RatingValue,RatingDate) %>% 
+              mutate(year=lubridate::year(RatingDate)) %>% 
+              count(year,RatingValue) %>% 
+              left_join(ratingsdata %>% 
+                          filter(SchemeType=="FHRS"& BusinessType==input$BusinessType) %>% 
+                          mutate(year=lubridate::year(RatingDate))  %>% 
+                          count(year) %>% rename(yearlycount=n), 
+                        by="year") %>% 
+              mutate(ratings_percentage=n/yearlycount) %>% filter(RatingValue==input$RatingValues)
+              
+            # df <- dbGetQuery(db,
+            #      statement =
+            #      'SELECT D.ratingValue,COUNT(D.ratingValue)/CAST(yearly_count AS REAL) AS ratings_percentage, Date.Year FROM fact_rating F
+            #                INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
+            #                INNER JOIN dim_BusinessType B ON B.BusinessTypeID=F.BusinessTypeID
+            #                INNER JOIN dim_Date Date ON Date.RatingDate=F.RatingDate
+            #                LEFT JOIN (
+            #                    SELECT Date.Year, COUNT(D.ratingValue) AS yearly_count FROM fact_rating F
+            #                    INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
+            #                    INNER JOIN dim_BusinessType B ON B.BusinessTypeID=F.BusinessTypeID
+            #                    INNER JOIN dim_Date Date ON Date.RatingDate=F.RatingDate
+            #                    WHERE D.SchemeType = $Scheme
+            #                    AND B.BusinessType = $Btype
+            #                    GROUP BY Date.Year) DT ON DT.Year=Date.Year
+            #                WHERE D.SchemeType = $Scheme
+            #                AND B.BusinessType = $Btype
+            #                AND D.ratingValue = $Rating
+            #                GROUP BY D.ratingValue, Date.Year;'
+            # ,list(Scheme="FHRS",Btype=input$BusinessType,Rating=input$RatingValues))
+            plt1 <- plot_ly(df,x=~year,y=~ratings_percentage) %>% layout(title="Proportion of rating value by year and Business Type")
+            plt1 %>% add_lines()
         }
     )
 
-# 2. This navigation option  describes relaltionship between the sub score distribution based on food authority rating value    
+# 2. This navigation option describes the sub-score distributions of every rating value.    
    
-# Query
-#    'Select F.BusinessTypeID,F.Ratingkey,SchemeType,D.RatingValue, B.BusinessType, F.Hygiene,F.Structural, F.ConfidenceInManagement from fact_rating F join dim_RatingTypes D on 
-#                F.RatingKey =D.RatingKey join dim_BusinessType B on B.BusinessTypeID= F.BusinessTypeID
-#                join dim_Date date on Date.RatingDate =F.RatingDate where SchemeType=="FHRS" & RatingValue==input$RatingValues2
-#                '   
-    
-     dfPlay2 <- dbGetQuery(
-        db,
-        statement = 
-            'Select F.BusinessTypeID,F.Ratingkey,SchemeType,D.RatingValue, B.BusinessType, F.Hygiene,F.Structural, F.ConfidenceInManagement from fact_rating F join dim_RatingTypes D on 
-                F.RatingKey =D.RatingKey join dim_BusinessType B on B.BusinessTypeID= F.BusinessTypeID
-                join dim_Date date on Date.RatingDate =F.RatingDate 
-                ')
-# This plot will show the sub score distribution for hygiene,structural and confidence in management for selected rating value    
-     output$Play2 <- renderPlot(
+     output$Play2 <- renderPlotly(
         {
+            df <- ratingsdata %>% 
+              filter(RatingValue==input$RatingValues2) %>% 
+              count(Hygiene) %>% 
+              add_column(Score="Hygiene") %>%  
+              rename(level=Hygiene) %>% 
+              bind_rows(ratingsdata %>% 
+                          filter(RatingValue==input$RatingValues2) %>% 
+                          count(Structural) %>% 
+                          add_column(Score="Structural") %>%  
+                          rename(level=Structural)
+                        ) %>% 
+              bind_rows(ratingsdata %>% 
+                          filter(RatingValue==input$RatingValues2) %>% 
+                          count(ConfidenceInManagement) %>% 
+                          add_column(Score="ConfidenceInManagement") %>%  
+                          rename(level=ConfidenceInManagement)
+                        ) %>% 
+              rename(Frequency=n) %>% 
+              drop_na()
+            
+            # df<-dbGetQuery(db,
+            #   statement="SELECT D.RatingValue, 'Hygiene' AS Score, F.Hygiene AS level, COUNT(F.Hygiene) AS Frequency
+            #      FROM fact_rating F
+            #      INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
+            #      INNER JOIN dim_BusinessType B ON B.BusinessTypeID=F.BusinessTypeID
+            #      WHERE D.RatingValue = $Rating
+            #      AND F.Hygiene NOT NULL
+            #      GROUP BY F.Hygiene
+            #      UNION 
+            #      SELECT D.RatingValue, 'Structural' AS Score, F.Structural AS level, COUNT(F.Structural) AS Frequency
+            #      FROM fact_rating F
+            #      INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
+            #      INNER JOIN dim_BusinessType B ON B.BusinessTypeID=F.BusinessTypeID
+            #      WHERE D.RatingValue = $Rating
+            #      AND F.Structural NOT NULL
+            #      GROUP BY F.Structural
+            #      UNION 
+            #      SELECT D.RatingValue, 'ConfidenceInManagement' AS Score, F.ConfidenceInManagement AS level, 
+            #      COUNT(F.ConfidenceInManagement) AS Frequency 
+            #      FROM fact_rating F
+            #      INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
+            #      INNER JOIN dim_BusinessType B ON B.BusinessTypeID=F.BusinessTypeID
+            #      WHERE D.RatingValue = $Rating
+            #      AND F.ConfidenceInManagement NOT NULL
+            #      GROUP BY F.ConfidenceInManagement;",
+            #  list(Rating=input$RatingValues2)) # Get rid of NA rows with 0 frequencies attached. (one row for each score)
             
             
-            df <- filter(dfPlay2,SchemeType=="FHRS" & RatingValue==input$RatingValues2)
             
-            plt1 <- ggplot(df, aes(x=Hygiene))+
-                geom_bar(fill="blue",aes(y = (..count..)/sum(..count..))) + 
-                ## version 3.0.0
-                scale_y_continuous(labels=percent) +
-                labs(
-                     x ="Hygiene", y = "Percentage of rating under Selection")
-                
-                
+                        
+            plt2<-plot_ly(df %>% filter(Score=="Hygiene"), x=~level,y=~Frequency) %>% add_bars(name="Hygiene")
               
-            plt2 <- ggplot(df, aes(x=Structural))+
-                geom_bar(fill = "#FF6666",aes(y = (..count..)/sum(..count..))) + 
-                ## version 3.0.0
-                scale_y_continuous(labels=percent) +
-                labs(
-                     x ="Structural", y = "Percentage of rating under Selection")+
-                theme(
-                       axis.text.y=element_blank(),  #remove y axis labels
-                       axis.ticks.y=element_blank()  #remove y axis ticks
-                )
-            
+
+            plt3<-plot_ly(df %>% filter(Score=="Structural"), x=~level,y=~Frequency) %>% add_bars(name="Structural")
                 
-            plt3 <- ggplot(df, aes(x=ConfidenceInManagement))+
-                geom_bar(fill="orange",aes(y = (..count..)/sum(..count..))) + 
-                ## version 3.0.0
-                scale_y_continuous(labels=percent) +
-                labs(
-                     x ="ConfidenceInManagement", y = "Percentage of rating under Selection") +
-            theme(
-              axis.text.y=element_blank(),  #remove y axis labels
-              axis.ticks.y=element_blank()  #remove y axis ticks
-            )
+            plt4<-plot_ly(df %>% filter(Score=="ConfidenceInManagement"), x=~level,y=~Frequency) %>% add_bars(name="Confidence In Management")
             
-            grid.arrange(plt1,plt2,plt3,ncol=3)
+            subplot(plt2,plt3,plt4,nrows=1,shareY=T) %>% layout(title="Sub-score values (lower is better)")
             
         }
     )
     
 #3. Top ten Authority for selected rating value
-# Query
-#  'Select F.BusinessTypeID,F.Ratingkey,SchemeType,D.RatingValue, B.BusinessType, Date.Year,L.LocalAuthorityName from fact_rating F join dim_RatingTypes D on 
-# F.RatingKey =D.RatingKey join dim_BusinessType B on B.BusinessTypeID= F.BusinessTypeID
-# join dim_Date date on Date.RatingDate =F.RatingDate join dim_LocalAuthority L on L.LocalAuthorityCode=F.LocalAuthorityCode 
-# WHERE SchemeType=="FHRS" and RatingValue==input$RatingValues'     
-     
 
 # This chart will render the  plot showing top 10 local Authorities based on rating at each level
-output$Play3 <- renderPlot(
+output$Play3 <- renderPlotly(
         {
-            dfPlay4 <- filter(dfPlay1,SchemeType=="FHRS"& RatingValue==input$RatingValues3)
-                      
-            dfPlay4 <-  dfPlay4 %>% group_by(LocalAuthorityName)%>% count(vars='LocalAuthorityName')
-            dfPlay4 <- rename(dfPlay4,freq=n)
-            dfPlay4 <- arrange(dfPlay4,desc(freq)) %>% head(n=10)
-            plt4 <- ggplot(dfPlay4, aes(x = reorder(LocalAuthorityName, - freq), y = freq ))+
-                geom_bar(stat = "identity")+ labs(y="Count",x="Local Authority Name") +
-              geom_text(aes(label = freq), vjust = -0.2)
+            df<-ratingsdata %>% 
+              filter(SchemeType=="FHRS") %>% 
+              select(LocalAuthorityName,RatingValue) %>% 
+              group_by(LocalAuthorityName) %>% 
+              count(RatingValue) %>% 
+              left_join(ratingsdata %>% 
+                          filter(SchemeType=="FHRS") %>% 
+                          group_by(LocalAuthorityName) %>% 
+                          summarize(All_reviews=n()),by="LocalAuthorityName") %>% 
+              mutate(Rating_percentage=n/All_reviews) %>% 
+              filter(RatingValue==input$RatingValues3) %>% 
+              arrange(desc(Rating_percentage)) %>% 
+              head(10)
             
+            # df <- dbGetQuery(db,
+            #                  statement=" SELECT D.ratingValue, COUNT(D.ratingValue)/CAST(LocalAuthorityCount AS REAL) AS Rating_percentage,
+            #                  L.LocalAuthorityName FROM fact_rating F
+            #                  INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
+            #                  INNER JOIN dim_LocalAuthority L on L.LocalAuthorityCode=F.LocalAuthorityCode 
+            #                  LEFT JOIN (
+            #                      SELECT L.LocalAuthorityName, COUNT(D.ratingValue) AS LocalAuthorityCount FROM fact_rating F
+            #                      INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
+            #                      INNER JOIN dim_LocalAuthority L on L.LocalAuthorityCode=F.LocalAuthorityCode 
+            #                      WHERE D.SchemeType = $Scheme
+            #                      GROUP BY L.LocalAuthorityName) DT ON DT.LocalAuthorityName=L.LocalAuthorityName
+            #                  WHERE D.SchemeType = $Scheme
+            #                  AND D.ratingValue = $Rating
+            #                  GROUP BY L.LocalAuthorityName, D.RatingValue
+            #                  ORDER BY Rating_percentage DESC
+            #                  LIMIT 10;",
+            #                  list(Scheme="FHRS",Rating=input$RatingValues3))
             
-            plt4
+            plt4 <- plot_ly(df,x=~LocalAuthorityName,y=~Rating_percentage) %>% add_bars()
+            plt4  %>% layout(xaxis = list(categoryorder = "total descending"),title="Local Authorities with highest percentage of given rating value")
         }
     )
     
@@ -244,6 +280,6 @@ output$Play3 <- renderPlot(
 
 # Complete app with UI and server components
 shinyApp(ui, server)
-
+dbDisconnect(db)
 
 ```

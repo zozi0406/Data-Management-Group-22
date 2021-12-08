@@ -100,7 +100,7 @@ if (!RSQLite::dbExistsTable(con,"fact_Rating")) {
                                      str_remove_all("</?p>") %>%
                                      str_remove_all("[\n\t]") %>%
                                      trimws)
-  
+
   #Convert to dimensional model
   dim_LocalAuthority<-ratingsdata %>% select(LocalAuthorityCode,LocalAuthorityName,LocalAuthorityWebSite,LocalAuthorityEmailAddress) %>% distinct
   dim_Date<-ratingsdata %>% select(RatingDate) %>% mutate(year = lubridate::year(RatingDate),
