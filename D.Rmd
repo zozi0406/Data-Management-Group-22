@@ -79,7 +79,8 @@ ui <- dashboardPage(
                     fluidRow(
                       box(width=12,h2("Sub-score (penalties) distributions given rating value"),
                           br(),
-                          "Most penalties (highest sub-scores) awarded for lack of confidence in management.")
+                          "Most penalties (highest sub-scores) 
+                          awarded for lack of confidence in management.")
                     ),
                     fluidRow(
                       # Business type distribution plot

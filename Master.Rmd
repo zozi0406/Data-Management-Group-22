@@ -1,12 +1,14 @@
 ---
 title: "Group 22 Data Management Parts A1(DDL and Queries), A2, B, C, D"
 output: pdf_document
+
+fontsize: 9
 ---
 
 ```{r knitr_options, include=FALSE}
 library(knitr)
 library(formatR)
-opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE,attr.source = ".numberLines")
+opts_chunk$set(attr.source = ".numberLines")
 ```
 
 ## A1: DDL
@@ -38,8 +40,10 @@ CREATE TABLE Reservation (
   Smoking_preferred INTEGER,
   Nr_beds_preferred INTEGER,
   High_or_low_floor_preferred TEXT,
-  -- SQLite does not have a Date data type, it can be stored as either Text, Real or Integer
-  -- In this case Integer is chosen for simplicity. Date operations work on all of them. SQLite: "https://www.sqlite.org/datatype3.html"
+  -- SQLite does not have a Date data type, 
+  --it can be stored as either Text, Real or Integer
+  -- In this case Integer is chosen for simplicity. 
+  --Date operations work on all of them."https://www.sqlite.org/datatype3.html"
   Arrival_date INTEGER NOT NULL,
   Departure_date INTEGER NOT NULL,
   Credit_card_num INTEGER NOT NULL,
@@ -62,13 +66,16 @@ CREATE TABLE Additional_services (
 CREATE TABLE Stay (
   Stay_id PRIMARY KEY AUTOINCREMENT,
   Guest_id INTEGER NOT NULL,
-  -- SQLite does not have a Date data type, it can be stored as either Text, Real or Integer
-  -- In this case Integer is chosen for simplicity. Date operations work on all of them. SQLite: "https://www.sqlite.org/datatype3.html"
+  -- SQLite does not have a Date data type, 
+  --it can be stored as either Text, Real or Integer
+  -- In this case Integer is chosen for simplicity. 
+  --Date operations work on all of them."https://www.sqlite.org/datatype3.html"
   Arrival_date INTEGER NOT NULL,
   Departure_date INTEGER NOT NULL,
   Channel_id TEXT,
   Channel_fee REAL,
-  -- Assuming official invoice number cannot contain letters of the alphabet, only numbers.
+  -- Assuming official invoice number cannot contain 
+  -- letters of the alphabet, only numbers.
   Invoice_number INTEGER,
   FOREIGN KEY (Guest_id) REFERENCES Guest(Guest_id),
   FOREIGN KEY (Channel_id) REFERENCES Booking_channel(Channel_id)
@@ -132,8 +139,10 @@ CREATE TABLE Room (
 CREATE TABLE Room_allocation (
   Hotel_id INTEGER NOT NULL,
   Room_name_or_number INTEGER NOT NULL,
-  -- SQLite does not have a Date data type, it can be stored as either Text, Real or Integer
-  -- In this case Integer is chosen for simplicity. Date operations work on all of them. SQLite: "https://www.sqlite.org/datatype3.html"
+    -- SQLite does not have a Date data type, 
+  --it can be stored as either Text, Real or Integer
+  -- In this case Integer is chosen for simplicity. 
+  --Date operations work on all of them."https://www.sqlite.org/datatype3.html"
   Date INTEGER NOT NULL,
   Channel_id INTEGER DEFAULT NULL,
   Reservation_id INTEGER DEFAULT NULL,
@@ -142,12 +151,16 @@ CREATE TABLE Room_allocation (
   FOREIGN KEY (Channel_id) REFERENCES Booking_channel(Channel_id),
   FOREIGN KEY (Reservation_id) REFERENCES Reservation(Reservation_id),
   FOREIGN KEY (Stay_id) REFERENCES Stay(Stay_id),
-  FOREIGN KEY (Hotel_id, Room_name_or_number) REFERENCES Room(Hotel_id,Room_name_or_number)
-  -- Ensure a room is only allocated to one purpose
-  CONSTRAINT Only_one_key CHECK ((Channel_id NOT NULL OR Reservation_id NOT NULL OR Stay_id NOT NULL)
-                            AND NOT (Channel_id NOT NULL AND Reservation_id NOT NULL)
-                            AND NOT (Reservation_id NOT NULL AND Stay_id NOT NULL)
-                            AND NOT (Channel_id NOT NULL AND Stay_id NOT NULL))
+  FOREIGN KEY (Hotel_id, Room_name_or_number) 
+  REFERENCES Room(Hotel_id,Room_name_or_number)
+  -- Ensure a room is only allocated to one purpose.
+  CONSTRAINT Only_one_key CHECK 
+    ((Channel_id NOT NULL 
+    OR Reservation_id NOT NULL 
+    OR Stay_id NOT NULL)
+    AND NOT (Channel_id NOT NULL AND Reservation_id NOT NULL)
+    AND NOT (Reservation_id NOT NULL AND Stay_id NOT NULL)
+    AND NOT (Channel_id NOT NULL AND Stay_id NOT NULL))
 );
 ```
 
@@ -163,10 +176,13 @@ INNER JOIN Invoice_payments IP ON IP.Stay_id = S.Stay_id
 WHERE S.Stay_id = 12345;
 
 
--- 2. The most valuable customers in (a) the last two months, (b) past year and (c) from the beginning of the records.
+-- 2. The most valuable customers in (a) the last two months, 
+-- (b) past year and (c) from the beginning of the records.
+
 -- a
 
--- Assuming last two months means to count all stays that started in the last two months.
+-- Assuming last two months means to count all 
+-- stays that started in the last two months.
 -- Assuming value means total spent including taxes paid
 SELECT G.Guest_id, SUM(IP.Amount) AS Total_spent FROM Stay S 
 INNER JOIN Guest G ON G.Guest_id = S.Guest_id
@@ -181,8 +197,10 @@ ORDER BY Total_spent DESC LIMIT 10;
 SELECT G.Guest_id, SUM(IP.Amount) AS Total_spent FROM Stay S 
 INNER JOIN Guest G ON G.Guest_id = S.Guest_id
 INNER JOIN Invoice_payments IP ON IP.Stay_id = S.Stay_id 
--- Based on https://www.sqlite.org/lang_datefunc.html, Assuming by past year, the last 365 days are meant.
--- If all stays since the start of the year are meant, "-1 year" would be replaced by "start of year".
+-- Based on https://www.sqlite.org/lang_datefunc.html, 
+-- Assuming by past year, the last 365 days are meant.
+-- If all stays since the start of the year are meant, 
+-- "-1 year" would be replaced by "start of year".
 WHERE date(S.Arrival_date) >= date('now',"-1 year")
 GROUP BY G.Guest_id
 ORDER BY Total_spent DESC LIMIT 10;
@@ -196,31 +214,40 @@ GROUP BY G.Guest_id
 ORDER BY Total_spent DESC LIMIT 10;
 
 
--- 3. Which are the top countries where our customers come from ?
+-- 3. Which are the top countries where our customers come from?
 
 SELECT Country, COUNT(Guest_id) AS Frequency FROM Guest 
 GROUP BY Country
 ORDER BY Frequency DESC LIMIT 10;
 
 
--- 4. How much did the hotel pay in referral fees for each of the platforms that we have contracted with?
+-- 4. How much did the hotel pay in referral fees for each 
+-- of the platforms that we have contracted with?
 
--- Assuming arrival date on the last day of the month means channel fees are charged for that month still.
-SELECT C.Channel_id, C.Channel_name, SUM(S.Channel_fee) AS Total_fees FROM Booking_channel C
+-- Assuming arrival date on the last day of the month means 
+-- channel fees are charged for that month still.
+SELECT C.Channel_id, C.Channel_name, SUM(S.Channel_fee) AS Total_fees 
+FROM Booking_channel C
 INNER JOIN Stay S on S.Channel_id=C.Channel_id
 -- Only include stays that finished on or before the end of the last month
 WHERE date(S.Arrival_date) <= date("now","start of month","-1 day")
 GROUP BY C.Channel_name;
 
 
--- 5. What is the utilization rate for each hotel (that is the average billable days of a hotel specified as the average utilization of room bookings for the last 12 months)
+-- 5. What is the utilization rate for each hotel (that is the average 
+-- billable days of a hotel specified as the average utilization 
+-- of room bookings for the last 12 months)?
 
 SELECT Name, Hotel_id, AVG(Utilisation) FROM
     (
-    SELECT H.Name, H.Hotel_id, R.Room_name_or_number, COUNT(RA.date)/365.0 AS Utilisation FROM Room_allocation RA  
+    SELECT H.Name, R.Hotel_id, R.Room_name_or_number, 
+    COUNT(RA.date)/365.0 AS Utilisation 
+    FROM Room_allocation RA  
+    -- Line break below to ensure fit on the page.
+    INNER JOIN Room R
+    ON RA.(Hotel_id, Room_name_or_number) = R.(Hotel_id, Room_name_or_number)
     -- Only joining to retrieve hotel name:
-    INNER JOIN Room R on RA.(Hotel_id, Room_name_or_number) = R.(Hotel_id, Room_name_or_number)
-    INNER JOIN Hotel H on R.Hotel_id = H.Hotel_id
+    INNER JOIN Hotel H ON R.Hotel_id = H.Hotel_id
     WHERE date(RA.Date) >= date("now","-1 year")
     -- To ensure that only stays count as utilised days:
     AND Stay_id NOT NULL
@@ -229,7 +256,8 @@ SELECT Name, Hotel_id, AVG(Utilisation) FROM
 GROUP BY Hotel_id;
 
 
--- 6. Calculate the Customer Value in terms of total spent for each customer before the current booking.
+-- 6. Calculate the Customer Value in terms of total spent 
+-- for each customer before the current booking.
 
 -- Assuming total spent includes taxes paid
 -- Stay only includes previous stays, so no need to filter anything.
@@ -251,13 +279,17 @@ HAVING S.Guest_id IN (SELECT DISTINCT Guest_id FROM Reservation);
 ## Queries:
 
 ```{sql A2Queries, eval=FALSE,warning=FALSE}
--- How many customers have stopped bringing their cars after the first encounter with the dealer ?
+-- How many customers have stopped bringing their cars 
+-- after the first encounter with the dealer?
 
 -- Assuming Customers have only one car
 SELECT COUNT(*) AS Churns FROM (
-  -- Subquery yields table with the number of times a customer brought their car to service and when the next service would be due, 
-  -- which can be analysed further to reveal more about the likelihood of coming to service more times.
-  SELECT C.VIN, COUNT(S.Service_id), C.Next_due_service_date AS Total_services FROM Car C
+  -- Subquery yields table with the number of times a customer brought 
+  -- their car to service and when the next service would be due, 
+  -- which can be analysed further to reveal more about 
+  -- the likelihood of coming to service more times.
+  SELECT C.VIN, COUNT(S.Service_id), C.Next_due_service_date AS Total_services 
+  FROM Car C
   INNER JOIN Service S ON C.VIN=S.VIN
   GROUP BY C.VIN
   )
@@ -266,12 +298,18 @@ WHERE date(Next_due_service_date)<date("now")
 AND Total_services = 1;
 
 
--- What is the relationship between the price of the service and the age of the car in terms of 
+-- What is the relationship between the price of the service 
+-- and the age of the car in terms of 
 --(a)actual car age (e.g., mileage) and b) time with the current owner?
 
 -- One query combined to extract information for both questions:
--- (a) can be answered via Mileage_at_service_time and (b) can be answered with days_since_purchase
-SELECT SUM(Costs.Item_cost), S.Mileage_at_service_time, (julianday(S.service_date)-julianday(C.Purchase_date)) AS days_since_purchase FROM Service S
+-- (a) can be answered via Mileage_at_service_time and 
+-- (b) can be answered with days_since_purchase
+
+
+SELECT SUM(Costs.Item_cost), S.Mileage_at_service_time, 
+(julianday(S.service_date)-julianday(C.Purchase_date)) AS days_since_purchase 
+FROM Service S
 INNER JOIN Car C ON C.VIN=S.VIN
 INNER JOIN Cost_item Costs ON Costs.Service_id=S.Service_id
 GROUP BY Service_id
@@ -293,7 +331,8 @@ dirs <- list.dirs("./partB_data_files/")
 # Drop root directory
 dirs <- dirs[-1] 
 
-# Extract file names from every directory and save them in a named list of character vectors
+# Extract file names from every directory and save them 
+# in a named list of character vectors
 files <- sapply(dirs,list.files,pattern="*.xlsx",USE.NAMES=T,simplify = F)
 
 # Create empty list 
@@ -309,7 +348,8 @@ for (countrydir in names(files)) {
     # Record sheet dimensions to use as reference points
     rowcount <- dim(excel)[1]
     colcount <- dim(excel)[2]
-    # Extract main table, removing empty row and column in the second row and column of the resulting table
+    # Extract main table, removing empty row and column in the 
+    # second row and column of the resulting table
     data<-excel[c(5,seq(7,rowcount-3)),c(1,seq(3,colcount))]
     # Use first row as header
     colnames(data) <- data[1,]
@@ -318,9 +358,13 @@ for (countrydir in names(files)) {
     # Rename first column to year
     colnames(data)[1] <- "year"
     # Convert to long format
-    data <- data %>% pivot_longer(2:length(data[1,]),names_to = "product",values_to = "value") 
+    data <- data %>% pivot_longer(2:length(data[1,]),
+                                  names_to = "product",
+                                  
+                                  values_to = "value") 
     # Add flow and country from the sheet
-    data <- data %>% add_column(flow=excel[2,3] %>% unlist %>% unname, country=excel[4,3] %>% unlist %>% unname) 
+    data <- data %>% add_column(flow=excel[2,3] %>% unlist %>% unname, 
+                                country=excel[4,3] %>% unlist %>% unname) 
     # Reorder columns to fit format requirements
     data <- data %>% select(country,year,flow,product,value)
     # Add resulting dataframe to the list
@@ -360,7 +404,8 @@ library(textutils)
 link<-"https://data.food.gov.uk/catalog/datasets/38dd8d6a-5ab1-4f50-b753-ab33288e3200"
 
 # Extract data download links from html page
-xmllinks<-read_html(link) %>% html_nodes(".o-dataset-distribution--link") %>% html_attr("href")
+xmllinks<-read_html(link) %>% html_nodes(".o-dataset-distribution--link") %>% 
+  html_attr("href")
 # Filter to only .xml files (to remove a link that points to webpage index)
 xmllinks<-xmllinks[xmllinks %>% str_detect(".xml$")]
 # Filter to English language files (some were duplicates in Welsh)
@@ -405,18 +450,25 @@ if (!RSQLite::dbExistsTable(con,"fact_Rating")&!file.exists("C_output.rds")) {
     # Find the values of the populated fields for every node
     nodevalues<-xml_children(nodes) %>% xml_text %>% trimws
     
-    # Create a long dataframe with node names and values, indexed by repeating the index node-length times.
+    # Create a long dataframe with node names and values, indexed by 
+    # repeating the index node-length times.
     # After that, pivot to a wide-format.
-    # Finally, add the values of the nested fields (Geocode and Scores) separately, as they would have been merged into one column otherwise.
+    # Finally, add the values of the nested fields (Geocode and Scores) 
+    # separately, as they would have been merged into one column otherwise.
     df<-tibble(ID=rep(ids,nodelengths),
                    variable=nodenames,
                    values=nodevalues) %>%
       pivot_wider(names_from="variable",values_from="values") %>%
-      add_column(Longitude=xml_child(nodes,search="Geocode") %>% xml_child("Longitude") %>% xml_text,
-                 Latitude=xml_child(nodes,search="Geocode") %>% xml_child("Latitude") %>% xml_text,
-                 Hygiene=xml_child(nodes,search="Scores") %>% xml_child("Hygiene") %>% xml_text,
-                 Structural=xml_child(nodes,search="Scores") %>% xml_child("Structural") %>% xml_text,
-                 ConfidenceInManagement=xml_child(nodes,search="Scores") %>% xml_child("ConfidenceInManagement") %>% xml_text)
+      add_column(Longitude=xml_child(nodes,search="Geocode") %>% 
+                   xml_child("Longitude") %>% xml_text,
+                 Latitude=xml_child(nodes,search="Geocode") %>% 
+                   xml_child("Latitude") %>% xml_text,
+                 Hygiene=xml_child(nodes,search="Scores") %>% 
+                   xml_child("Hygiene") %>% xml_text,
+                 Structural=xml_child(nodes,search="Scores") %>% 
+                   xml_child("Structural") %>% xml_text,
+                 ConfidenceInManagement=xml_child(nodes,search="Scores") %>% 
+                   xml_child("ConfidenceInManagement") %>% xml_text)
     
     # Remove duplicate and unnecessary columns
     df$Scores<-NULL
@@ -426,7 +478,8 @@ if (!RSQLite::dbExistsTable(con,"fact_Rating")&!file.exists("C_output.rds")) {
     # Progress tracker for the parsing process, prints a message every 10 files.
     xmldatalist[[filename]]<-df
     if (i %% 10 == 0){
-      paste0(i, " files processed from a total of ", length(xmllinks),".") %>% print()
+      paste0(i, " files processed from a total of ", length(xmllinks),".") %>% 
+        print()
     }
     
   }
@@ -436,21 +489,43 @@ if (!RSQLite::dbExistsTable(con,"fact_Rating")&!file.exists("C_output.rds")) {
   ratingsdata<-do.call(bind_rows,xmldatalist) %>% type_convert()
   
   # Decode HTML encoded characters and remove tags, newlines and tags.
-  ratingsdata$RightToReply<-ifelse(is.na(ratingsdata$RightToReply),NA,ratingsdata$RightToReply[!is.na(ratingsdata$RightToReply)] %>%
+  ratingsdata$RightToReply<-ifelse(is.na(ratingsdata$RightToReply),
+                                   NA,
+                                   ratingsdata$RightToReply[
+                                     !is.na(ratingsdata$RightToReply)] %>%
                                      textutils::HTMLdecode() %>%
                                      str_remove_all("</?p>") %>%
                                      str_remove_all("[\n\t]") %>%
                                      trimws)
 
   # Convert to dimensional model
-  dim_LocalAuthority<-ratingsdata %>% select(LocalAuthorityCode,LocalAuthorityName,LocalAuthorityWebSite,LocalAuthorityEmailAddress) %>% distinct
-  dim_Date<-ratingsdata %>% select(RatingDate) %>% mutate(year = lubridate::year(RatingDate),
-                                                          month = lubridate::month(RatingDate),
-                                                          day = lubridate::day(RatingDate)) %>% distinct()
-  dim_BusinessType<-ratingsdata %>% select(BusinessType,BusinessTypeID) %>% distinct()
-  dim_RatingTypes<-ratingsdata %>% select(RatingKey,SchemeType,RatingValue) %>% distinct
-  fact_Rating <- ratingsdata %>% select(-c(LocalAuthorityName,LocalAuthorityWebSite,LocalAuthorityEmailAddress,BusinessType,RatingValue,SchemeType))
+  dim_LocalAuthority<-ratingsdata %>% select(LocalAuthorityCode, 
+                                             LocalAuthorityName, 
+                                             LocalAuthorityWebSite, 
+                                             LocalAuthorityEmailAddress) %>% 
+                                      distinct
+  dim_Date<-ratingsdata %>% 
+    select(RatingDate) %>% 
+    mutate(year = lubridate::year(RatingDate),
+           month = lubridate::month(RatingDate),
+           day = lubridate::day(RatingDate)) %>% 
+    distinct()
   
+  dim_BusinessType<-ratingsdata %>% 
+    select(BusinessType,BusinessTypeID) %>% 
+    distinct()
+  
+  dim_RatingTypes<-ratingsdata %>% 
+    select(RatingKey,SchemeType,RatingValue) %>% 
+    distinct
+  
+  fact_Rating <- ratingsdata %>% select(-c(LocalAuthorityName, 
+                                           LocalAuthorityWebSite, 
+                                           LocalAuthorityEmailAddress, 
+                                           BusinessType, 
+                                           RatingValue, 
+                                           SchemeType))
+   
   # Write to SQLite database
   RSQLite::dbWriteTable(con,"fact_Rating",fact_Rating)
   RSQLite::dbWriteTable(con,"dim_Date",dim_Date)
@@ -486,8 +561,10 @@ library(lubridate)
 ratingsdata<-readRDS("C_output.rds")
 
 paste(object.size(ratingsdata) / 1048576,"MB") %>% print
-# As the dataframe is only about 218 MB, loading it into memory is easily possible on any modern computer 
-# Keeping the object in memory and running dplyr code proved faster than SQL in practice.
+# As the dataframe is only about 218 MB, loading it into memory
+# is easily possible on any modern computer 
+# Keeping the object in memory and running dplyr code 
+# proved faster than SQL in practice.
 
 # SQL code provided for illustration throughout the code.
 # Conencting to database
@@ -495,7 +572,8 @@ paste(object.size(ratingsdata) / 1048576,"MB") %>% print
 
 # getting unique business type and Id for filters
 BusinessTypeId <- ratingsdata %>% select(BusinessType,BusinessTypeID) %>% distinct()
-# BusinessTypeId <- dbGetQuery(db, 'SELECT DISTINCT BusinessType,BusinessTypeID FROM dim_BusinessType;')
+# BusinessTypeId <- dbGetQuery(db, 'SELECT DISTINCT 
+#                              BusinessType, BusinessTypeID FROM dim_BusinessType;')
 
 
 ui <- dashboardPage(
@@ -506,9 +584,15 @@ ui <- dashboardPage(
         #Sidebar definition
         dashboardSidebar(
           sidebarMenu(
-            menuItem("Ratings over time", tabName = "Tab1", icon = icon("history")),
-            menuItem("Sub-scores by ratings", tabName = "Tab2", icon = icon("project-diagram")),
-            menuItem("Top local authorities by rating", tabName = "Tab3", icon = icon("map-marked"))
+            menuItem("Ratings over time", 
+                     tabName = "Tab1", 
+                     icon = icon("history")),
+            menuItem("Sub-scores by ratings", 
+                     tabName = "Tab2", 
+                     icon = icon("project-diagram")),
+            menuItem("Top local authorities by rating", 
+                     tabName = "Tab3", 
+                     icon = icon("map-marked"))
           )
         ),
         dashboardBody(
@@ -517,9 +601,12 @@ ui <- dashboardPage(
             # First tab
             tabItem(tabName = "Tab1",
               fluidRow(
-                box(width=12,h2("Density of specific rating values over time based on business type"),
+                box(width=12,
+                    h2("Density of specific rating values
+                       over time based on business type"),
                     br(),"
-                    Lower ratings (0-2) gaining more weight in the last few years.")
+                    Lower ratings (0-2) gaining more 
+                    weight in the last few years.")
               ),
               fluidRow(
                 box(title ="Rating Value slider", width=6,
@@ -542,9 +629,11 @@ ui <- dashboardPage(
             # Second tab
             tabItem(tabName ="Tab2",
                     fluidRow(
-                      box(width=12,h2("Sub-score (penalties) distributions given rating value"),
+                      box(width=12,h2("Sub-score (penalties) 
+                                      distributions given rating value"),
                           br(),
-                          "Most penalties (highest sub-scores) awarded for lack of confidence in management.")
+                          "Most penalties (highest sub-scores) awarded 
+                          for lack of confidence in management.")
                     ),
                     fluidRow(
                       # Business type distribution plot
@@ -559,27 +648,29 @@ ui <- dashboardPage(
                      fluidRow(
                         box(width=12,
                            #Plot Output
-                           plotlyOutput(outputId = 'Play2',height = "500px",width="100%")
+                           plotlyOutput(outputId = 'Play2',
+                                        height = "500px",
+                                        width="100%")
                         )
             )),
             
             # Third tab
             tabItem(tabName ="Tab3",
                     fluidRow(
-                      box(width=12,h2("Local authorities with highest proportion of a rating value"),
+                      box(width=12,
+                          h2("Local authorities with highest 
+                             proportion of a rating value"),
                           br(),
-                          "Waltham Forest has the highest proportion (4%) of establishments with a rating of 0,
+                          "Waltham Forest has the highest proportion (4%) 
+                          of establishments with a rating of 0,
                           nearly 4 times as many as the runner-up.")
                     ),
                     fluidRow(
                       box(width=12,title="Rating Value Slider",
                           sliderInput(
                            inputId = 'RatingValues3',
-                           'Rating Values:',
-                           0,
-                           5,
-                           0
-                     ))),
+                           'Rating Values:', 0, 5, 0)
+                     )),
                      fluidRow(
                        box(width=12,
                         #Plot Output
@@ -594,9 +685,6 @@ ui <- dashboardPage(
 
 server <- function(input, output, session) {
   
-# 1. This plot is implementing Percentage of rating under Selected Category over the years
-
-# Plotting a graph using ggplot showing year vs percentage of rating under each category  
     output$Play1 <- renderPlotly(
         {
           df <- ratingsdata %>% 
@@ -605,34 +693,41 @@ server <- function(input, output, session) {
             mutate(year=lubridate::year(RatingDate)) %>% 
             count(year,RatingValue) %>% 
             left_join(ratingsdata %>% 
-                        filter(SchemeType=="FHRS"& BusinessType==input$BusinessType) %>% 
+                        filter(SchemeType=="FHRS" & 
+                                 BusinessType==input$BusinessType) %>% 
                         mutate(year=lubridate::year(RatingDate))  %>% 
                         count(year) %>% rename(yearlycount=n), 
                       by="year") %>% 
-            mutate(ratings_percentage=n/yearlycount) %>% filter(RatingValue==input$RatingValues)
+            mutate(ratings_percentage=n/yearlycount) %>% 
+            filter(RatingValue==input$RatingValues)
             
           # df <- dbGetQuery(db,
           #      statement =
-          #      'SELECT D.ratingValue,COUNT(D.ratingValue)/CAST(yearly_count AS REAL) AS ratings_percentage, Date.Year FROM fact_rating F
-          #                INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
-          #                INNER JOIN dim_BusinessType B ON B.BusinessTypeID=F.BusinessTypeID
-          #                INNER JOIN dim_Date Date ON Date.RatingDate=F.RatingDate
-          #                LEFT JOIN (
-          #                    SELECT Date.Year, COUNT(D.ratingValue) AS yearly_count FROM fact_rating F
-          #                    INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
-          #                    INNER JOIN dim_BusinessType B ON B.BusinessTypeID=F.BusinessTypeID
-          #                    INNER JOIN dim_Date Date ON Date.RatingDate=F.RatingDate
-          #                    WHERE D.SchemeType = $Scheme
-          #                    AND B.BusinessType = $Btype
-          #                    GROUP BY Date.Year) DT ON DT.Year=Date.Year
-          #                WHERE D.SchemeType = $Scheme
-          #                AND B.BusinessType = $Btype
-          #                AND D.ratingValue = $Rating
-          #                GROUP BY D.ratingValue, Date.Year;'
+          #      'SELECT D.ratingValue,
+          #      COUNT(D.ratingValue)/CAST(yearly_count AS REAL) AS ratings_percentage, 
+          #      Date.Year FROM fact_rating F
+          #      INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
+          #      INNER JOIN dim_BusinessType B ON B.BusinessTypeID=F.BusinessTypeID
+          #      INNER JOIN dim_Date Date ON Date.RatingDate=F.RatingDate
+          #      LEFT JOIN (
+          #          SELECT Date.Year, COUNT(D.ratingValue) AS yearly_count 
+          #          FROM fact_rating F
+          #          INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
+          #          INNER JOIN dim_BusinessType B ON B.BusinessTypeID=F.BusinessTypeID
+          #          INNER JOIN dim_Date Date ON Date.RatingDate=F.RatingDate
+          #          WHERE D.SchemeType = $Scheme
+          #          AND B.BusinessType = $Btype
+          #          GROUP BY Date.Year) DT ON DT.Year=Date.Year
+          #      WHERE D.SchemeType = $Scheme
+          #      AND B.BusinessType = $Btype
+          #      AND D.ratingValue = $Rating
+          #      GROUP BY D.ratingValue, Date.Year;'
           # ,list(Scheme="FHRS",Btype=input$BusinessType,Rating=input$RatingValues))
           
-          plt1 <- plot_ly(df,x=~year,y=~ratings_percentage) %>% layout(title="Proportion of rating value by year and Business Type")
-          plt1 %>% add_lines()
+          plt1 <- plot_ly(df,x=~year,y=~ratings_percentage) %>% 
+            layout(title="Proportion of rating value by year and Business Type") %>% 
+            add_lines
+          plt1
         }
     )
 
@@ -661,45 +756,63 @@ server <- function(input, output, session) {
             drop_na()
           
           # df<-dbGetQuery(db,
-          #   statement="SELECT D.RatingValue, 'Hygiene' AS Score, F.Hygiene AS level, COUNT(F.Hygiene) AS Frequency
-          #      FROM fact_rating F
-          #      INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
-          #      INNER JOIN dim_BusinessType B ON B.BusinessTypeID=F.BusinessTypeID
-          #      WHERE D.RatingValue = $Rating
-          #      AND F.Hygiene NOT NULL
-          #      GROUP BY F.Hygiene
-          #      UNION 
-          #      SELECT D.RatingValue, 'Structural' AS Score, F.Structural AS level, COUNT(F.Structural) AS Frequency
-          #      FROM fact_rating F
-          #      INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
-          #      INNER JOIN dim_BusinessType B ON B.BusinessTypeID=F.BusinessTypeID
-          #      WHERE D.RatingValue = $Rating
-          #      AND F.Structural NOT NULL
-          #      GROUP BY F.Structural
-          #      UNION 
-          #      SELECT D.RatingValue, 'ConfidenceInManagement' AS Score, F.ConfidenceInManagement AS level, 
-          #      COUNT(F.ConfidenceInManagement) AS Frequency 
-          #      FROM fact_rating F
-          #      INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
-          #      INNER JOIN dim_BusinessType B ON B.BusinessTypeID=F.BusinessTypeID
-          #      WHERE D.RatingValue = $Rating
-          #      AND F.ConfidenceInManagement NOT NULL
-          #      GROUP BY F.ConfidenceInManagement;",
-          #  list(Rating=input$RatingValues2)) # Get rid of NA rows with 0 frequencies attached. (one row for each score)
+          #   statement=
+          #   "SELECT D.RatingValue, 'Hygiene' AS Score, 
+          #    F.Hygiene AS level, COUNT(F.Hygiene) AS Frequency
+          #    FROM fact_rating F
+          #    INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
+          #    INNER JOIN dim_BusinessType B ON B.BusinessTypeID=F.BusinessTypeID
+          #    WHERE D.RatingValue = $Rating
+          #    AND F.Hygiene NOT NULL
+          #    GROUP BY F.Hygiene
+          #    UNION
+          #    SELECT D.RatingValue, 'Structural' AS Score, 
+          #    F.Structural AS level, COUNT(F.Structural) AS Frequency
+          #    FROM fact_rating F
+          #    INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
+          #    INNER JOIN dim_BusinessType B ON B.BusinessTypeID=F.BusinessTypeID
+          #    WHERE D.RatingValue = $Rating
+          #    AND F.Structural NOT NULL
+          #    GROUP BY F.Structural
+          #    UNION
+          #    SELECT D.RatingValue, 'ConfidenceInManagement' AS Score, 
+          #    F.ConfidenceInManagement AS level,
+          #    COUNT(F.ConfidenceInManagement) AS Frequency
+          #    FROM fact_rating F
+          #    INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
+          #    INNER JOIN dim_BusinessType B ON B.BusinessTypeID=F.BusinessTypeID
+          #    WHERE D.RatingValue = $Rating
+          #    AND F.ConfidenceInManagement NOT NULL
+          #    GROUP BY F.ConfidenceInManagement;",
+          #  list(Rating=input$RatingValues2)) 
           
           
           
           
-          plt2<-plot_ly(df %>% filter(Score=="Hygiene"), x=~level,y=~Frequency) %>% add_bars(name="Hygiene")
-          plt3<-plot_ly(df %>% filter(Score=="Structural"), x=~level,y=~Frequency) %>% add_bars(name="Structural")
-          plt4<-plot_ly(df %>% filter(Score=="ConfidenceInManagement"), x=~level,y=~Frequency) %>% add_bars(name="Confidence In Management")
-          subplot(plt2,plt3,plt4,nrows=1,shareY=T) %>% layout(title="Sub-score values (lower is better)")
+          plt2<-plot_ly(df %>% 
+                          filter(Score=="Hygiene"),
+                        x=~level,y=~Frequency) %>% 
+            add_bars(name="Hygiene")
+          
+          plt3<-plot_ly(df %>% 
+                          filter(Score=="Structural"), 
+                        x=~level, y=~Frequency) %>% 
+            add_bars(name="Structural")
+          
+          plt4<-plot_ly(df %>% 
+                          filter(Score=="ConfidenceInManagement"), 
+                        x=~level,y=~Frequency) %>% 
+            add_bars(name="Confidence In Management")
+          
+          subplot(plt2,plt3,plt4,nrows=1,shareY=T) %>% 
+            layout(title="Sub-score values (lower is better)")
       }
   )
-    
-#3. Top ten Authority for selected rating value
+   
+# 3. Top ten Authority for selected rating value
 
-# This chart will render the  plot showing top 10 local Authorities based on rating at each level
+# This chart will render the  plot showing top-10 
+# local Authorities based on rating at each level
     output$Play3 <- renderPlotly(
       {
           df<-ratingsdata %>% 
@@ -710,39 +823,69 @@ server <- function(input, output, session) {
             left_join(ratingsdata %>% 
                         filter(SchemeType=="FHRS") %>% 
                         group_by(LocalAuthorityName) %>% 
-                        summarize(All_reviews=n()),by="LocalAuthorityName") %>% 
+                        summarize(All_reviews=n()),
+                      by="LocalAuthorityName") %>% 
             mutate(Rating_percentage=n/All_reviews) %>% 
             filter(RatingValue==input$RatingValues3) %>% 
             arrange(desc(Rating_percentage)) %>% 
             head(10)
           
-          # df <- dbGetQuery(db,
-          #                  statement=" SELECT D.ratingValue, COUNT(D.ratingValue)/CAST(LocalAuthorityCount AS REAL) AS Rating_percentage,
-          #                  L.LocalAuthorityName FROM fact_rating F
-          #                  INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
-          #                  INNER JOIN dim_LocalAuthority L on L.LocalAuthorityCode=F.LocalAuthorityCode 
-          #                  LEFT JOIN (
-          #                      SELECT L.LocalAuthorityName, COUNT(D.ratingValue) AS LocalAuthorityCount FROM fact_rating F
-          #                      INNER JOIN dim_RatingTypes D ON F.RatingKey=D.RatingKey
-          #                      INNER JOIN dim_LocalAuthority L on L.LocalAuthorityCode=F.LocalAuthorityCode 
-          #                      WHERE D.SchemeType = $Scheme
-          #                      GROUP BY L.LocalAuthorityName) DT ON DT.LocalAuthorityName=L.LocalAuthorityName
-          #                  WHERE D.SchemeType = $Scheme
-          #                  AND D.ratingValue = $Rating
-          #                  GROUP BY L.LocalAuthorityName, D.RatingValue
-          #                  ORDER BY Rating_percentage DESC
-          #                  LIMIT 10;",
-          #                  list(Scheme="FHRS",Rating=input$RatingValues3))
+          df <- dbGetQuery(db,
+                           statement=
+                           "SELECT D.ratingValue, 
+                           COUNT(D.ratingValue)/CAST(LocalAuthorityCount AS REAL) 
+                           AS Rating_percentage,
+                           L.LocalAuthorityName 
+                           FROM fact_rating F
+                           INNER JOIN dim_RatingTypes D 
+                           ON F.RatingKey=D.RatingKey
+                           INNER JOIN dim_LocalAuthority L 
+                           ON L.LocalAuthorityCode=F.LocalAuthorityCode
+                           LEFT JOIN (
+                               SELECT L.LocalAuthorityName, 
+                               COUNT(D.ratingValue) AS LocalAuthorityCount 
+                               FROM fact_rating F
+                               INNER JOIN dim_RatingTypes D 
+                               ON F.RatingKey=D.RatingKey
+                               INNER JOIN dim_LocalAuthority L 
+                               ON L.LocalAuthorityCode=F.LocalAuthorityCode
+                               WHERE D.SchemeType = $Scheme
+                               GROUP BY L.LocalAuthorityName) DT 
+                           ON DT.LocalAuthorityName=L.LocalAuthorityName
+                           WHERE D.SchemeType = $Scheme
+                           AND D.ratingValue = $Rating
+                           GROUP BY L.LocalAuthorityName, D.RatingValue
+                           ORDER BY Rating_percentage DESC
+                           LIMIT 10;",
+                           list(Scheme="FHRS",Rating=input$RatingValues3))
           
-          plt4 <- plot_ly(df,x=~LocalAuthorityName,y=~Rating_percentage) %>% add_bars()
+          plt4 <- plot_ly(df,x=~LocalAuthorityName,y=~Rating_percentage) %>% 
+            add_bars()
           plt4  %>% layout(xaxis = list(categoryorder = "total descending"),
-                           title="Local Authorities with highest percentage of given rating value")
+                           title="Local Authorities with highest 
+                           percentage of given rating value")
       }
     )
 }
 
-# Complete app with UI and server components (commented out to allow for running through when knitting)
-#shinyApp(ui, server)
-#dbDisconnect(db)
+# Complete app with UI and server components 
+# (commented out to allow for running through when knitting)
+# shinyApp(ui, server)
+# dbDisconnect(db)
 ```
+
+
+## Screenshots of dashboard:
+
+![](Part D Diagram/Diagram 1.png)
+![](Part D Diagram/Diagram 2.png)
+![](Part D Diagram/Diagram 3.png)
+![](Part D Diagram/Diagram 4.png)
+![](Part D Diagram/Diagram 5.png)
+![](Part D Diagram/Diagram 6.png)
+![](Part D Diagram/Diagram 7.png)
+![](Part D Diagram/Diagram 8.png)
+![](Part D Diagram/Diagram 9.png)
+![](Part D Diagram/Diagram 10.png)
+![](Part D Diagram/Diagram 11.png)
 
