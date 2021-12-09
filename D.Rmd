@@ -9,12 +9,7 @@ library(DBI)
 library(RSQLite)
 library(shiny)
 library(shinydashboard)
-library(shinythemes)
 library(shinyWidgets)
-library(ggplot2)
-library(gridExtra)
-library(grid)
-require(scales)
 library(plotly)
 library(tidyverse)
 library(lubridate)
@@ -29,12 +24,11 @@ paste(object.size(ratingsdata) / 1048576,"MB") %>% print
 # As the dataframe is only about 218 MB, loading it into memory is easily possible on any modern computer 
 # Keeping the object in memory and running dplyr code proved faster than SQL in practice.
 
-# SQL code provided for illustration
+# SQL code provided for illustration throughout the code.
 # Conencting to database
-db <- dbConnect(SQLite(), 'ratings.db')
+# db <- dbConnect(SQLite(), 'ratings.db')
 
 # getting unique business type and Id for filters
-
 BusinessTypeId <- ratingsdata %>% select(BusinessType,BusinessTypeID) %>% distinct()
 # BusinessTypeId <- dbGetQuery(db, 'SELECT DISTINCT BusinessType,BusinessTypeID FROM dim_BusinessType;')
 
@@ -44,7 +38,7 @@ ui <- dashboardPage(
         dashboardHeader(
           title = "Ratings dashboard"
         ),
-    
+        #Sidebar definition
         dashboardSidebar(
           sidebarMenu(
             menuItem("Ratings over time", tabName = "Tab1", icon = icon("history")),
@@ -54,6 +48,8 @@ ui <- dashboardPage(
         ),
         dashboardBody(
           tabItems(
+            
+            # First tab
             tabItem(tabName = "Tab1",
               fluidRow(
                 box(width=12,h2("Density of specific rating values over time based on business type"),
@@ -61,7 +57,6 @@ ui <- dashboardPage(
                     Lower ratings (0-2) gaining more weight in the last few years.")
               ),
               fluidRow(
-                # Business type distribution plot
                 box(title ="Rating Value slider", width=6,
                    sliderInput(inputId = 'RatingValues','Rating Values:',0,5,2)),
                 box(title="Business Type select", width=6,
@@ -73,12 +68,13 @@ ui <- dashboardPage(
                 ))),
               fluidRow(
                 box(width=12,
+                   #Plot Output
                    plotlyOutput(
                     outputId = 'Play1'
                    )
             ))),
-              
-                # Sub-score distribution tab
+            
+            # Second tab
             tabItem(tabName ="Tab2",
                     fluidRow(
                       box(width=12,h2("Sub-score (penalties) distributions given rating value"),
@@ -97,11 +93,12 @@ ui <- dashboardPage(
                      ))),
                      fluidRow(
                         box(width=12,
+                           #Plot Output
                            plotlyOutput(outputId = 'Play2',height = "500px",width="100%")
                         )
             )),
-                
-                # Local authority rating percentage tab
+            
+            # Third tab
             tabItem(tabName ="Tab3",
                     fluidRow(
                       box(width=12,h2("Local authorities with highest proportion of a rating value"),
@@ -117,12 +114,13 @@ ui <- dashboardPage(
                            0,
                            5,
                            0
-                      ))),
+                     ))),
                      fluidRow(
                        box(width=12,
+                        #Plot Output
                         plotlyOutput(
                            outputId = 'Play3',height = "500px",width="100%")  
-                    ))
+                     ))
             )
           )
         )

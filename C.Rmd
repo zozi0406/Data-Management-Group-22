@@ -116,10 +116,9 @@ if (!RSQLite::dbExistsTable(con,"fact_Rating")&!file.exists("C_output.rds")) {
   RSQLite::dbWriteTable(con,"dim_BusinessType",dim_BusinessType)
   RSQLite::dbWriteTable(con,"dim_RatingTypes",dim_RatingTypes)
   
+  #Save ratingsdata as RDS
   saveRDS(ratingsdata,"C_output.rds")
-} else {
-  ratingsdata<-readRDS("C_output.rds")
-} 
+}
 
 #Disconnect from database
 RSQLite::dbDisconnect(con)
