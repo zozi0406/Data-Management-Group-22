@@ -423,7 +423,7 @@ xmldatalist=list()
 con<-RSQLite::dbConnect(RSQLite::SQLite(),"ratings.db")
 
 # Around 10 minutes runtime excl. download
-if (!RSQLite::dbExistsTable(con,"fact_Rating")&!file.exists("C_output.rds")) {
+if (!RSQLite::dbExistsTable(con,"fact_Rating")|!file.exists("C_output.rds")) {
   for (i in 1:length(xmllinks)) {
     
     # Get link based on loop variable.
