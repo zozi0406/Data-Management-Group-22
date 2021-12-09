@@ -1,5 +1,5 @@
 ---
-title: "Group 22 Data Management Parts A1(DDL and Queries), A2, B, C, D"
+title: "Appendix: A2 logical schema and all other code"
 output: pdf_document
 
 fontsize: 9
@@ -377,6 +377,8 @@ fulldata <- do.call(bind_rows, datalist)
 
 # Change to numeric data type and simultaneously coerce ".." values to NA
 fulldata$value <- fulldata$value %>% as.numeric
+
+fulldata
 
 # Count total rows in the dataframe and display
 (totalrecords <- fulldata %>% nrow())

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2021.12.9)  9 DEC 2021 14:47
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2021.12.9)  9 DEC 2021 14:58
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -524,7 +524,7 @@ Underfull \vbox (badness 10000) detected at line 267
  []
 
 
-Overfull \vbox (1.01447pt too high) detected at line 267
+Underfull \vbox (badness 10000) detected at line 267
  []
 
 [2] [3]
@@ -539,155 +539,155 @@ File: Logical Schema A2-2.png Graphic file (type png)
 Package pdftex.def Info: Logical Schema A2-2.png  used on input line 384.
 (pdftex.def)             Requested size: 469.76756pt x 146.76477pt.
 [5] [6 <./Logical Schema A2-2.png>] [7] [8]
-Underfull \vbox (badness 10000) detected at line 664
+Underfull \vbox (badness 10000) detected at line 687
  []
 
 
-Underfull \vbox (badness 10000) detected at line 664
+Underfull \vbox (badness 10000) detected at line 687
  []
 
 [9]
-Underfull \vbox (badness 10000) detected at line 664
+Underfull \vbox (badness 10000) detected at line 687
  []
 
 
-Underfull \vbox (badness 10000) detected at line 664
+Underfull \vbox (badness 10000) detected at line 687
  []
 
 [10] [11]
-Underfull \vbox (badness 10000) detected at line 996
+Underfull \vbox (badness 10000) detected at line 1019
  []
 
 
-Underfull \vbox (badness 10000) detected at line 996
+Overfull \vbox (0.18224pt too high) detected at line 1019
  []
 
 [12]
-Underfull \vbox (badness 10000) detected at line 996
+Underfull \vbox (badness 10000) detected at line 1019
  []
 
 
-Underfull \vbox (badness 10000) detected at line 996
+Underfull \vbox (badness 10000) detected at line 1019
  []
 
 [13]
-Underfull \vbox (badness 10000) detected at line 996
+Underfull \vbox (badness 10000) detected at line 1019
  []
 
 
-Underfull \vbox (badness 10000) detected at line 996
+Underfull \vbox (badness 10000) detected at line 1019
  []
 
 [14]
-Underfull \vbox (badness 10000) detected at line 996
+Underfull \vbox (badness 10000) detected at line 1019
  []
 
 
-Underfull \vbox (badness 10000) detected at line 996
+Underfull \vbox (badness 10000) detected at line 1019
  []
 
 [15]
-Underfull \vbox (badness 10000) detected at line 996
+Underfull \vbox (badness 10000) detected at line 1019
  []
 
 
-Underfull \vbox (badness 10000) detected at line 996
+Underfull \vbox (badness 10000) detected at line 1019
  []
 
 [16]
 <Part D Diagram/Diagram 1.png, id=127, 1030.85126pt x 580.1675pt>
 File: Part D Diagram/Diagram 1.png Graphic file (type png)
 <use Part D Diagram/Diagram 1.png>
-Package pdftex.def Info: Part D Diagram/Diagram 1.png  used on input line 1001.
+Package pdftex.def Info: Part D Diagram/Diagram 1.png  used on input line 1024.
 
 (pdftex.def)             Requested size: 469.74588pt x 264.37498pt.
 <Part D Diagram/Diagram 2.png, id=128, 1028.84375pt x 582.175pt>
 File: Part D Diagram/Diagram 2.png Graphic file (type png)
 <use Part D Diagram/Diagram 2.png>
-Package pdftex.def Info: Part D Diagram/Diagram 2.png  used on input line 1002.
+Package pdftex.def Info: Part D Diagram/Diagram 2.png  used on input line 1025.
 
 (pdftex.def)             Requested size: 469.75732pt x 265.8139pt.
 <Part D Diagram/Diagram 3.png, id=129, 1031.855pt x 576.1525pt>
 File: Part D Diagram/Diagram 3.png Graphic file (type png)
 <use Part D Diagram/Diagram 3.png>
-Package pdftex.def Info: Part D Diagram/Diagram 3.png  used on input line 1003.
+Package pdftex.def Info: Part D Diagram/Diagram 3.png  used on input line 1026.
 
 (pdftex.def)             Requested size: 469.74667pt x 262.29045pt.
 <Part D Diagram/Diagram 4.png, id=130, 1028.84375pt x 562.1pt>
 File: Part D Diagram/Diagram 4.png Graphic file (type png)
 <use Part D Diagram/Diagram 4.png>
-Package pdftex.def Info: Part D Diagram/Diagram 4.png  used on input line 1004.
+Package pdftex.def Info: Part D Diagram/Diagram 4.png  used on input line 1027.
 
 (pdftex.def)             Requested size: 469.75732pt x 256.6479pt.
 <Part D Diagram/Diagram 5.png, id=131, 1032.85875pt x 626.34pt>
 File: Part D Diagram/Diagram 5.png Graphic file (type png)
 <use Part D Diagram/Diagram 5.png>
-Package pdftex.def Info: Part D Diagram/Diagram 5.png  used on input line 1005.
+Package pdftex.def Info: Part D Diagram/Diagram 5.png  used on input line 1028.
 
 (pdftex.def)             Requested size: 469.74658pt x 284.86089pt.
 <Part D Diagram/Diagram 6.png, id=132, 1030.85126pt x 626.34pt>
 File: Part D Diagram/Diagram 6.png Graphic file (type png)
 <use Part D Diagram/Diagram 6.png>
-Package pdftex.def Info: Part D Diagram/Diagram 6.png  used on input line 1006.
+Package pdftex.def Info: Part D Diagram/Diagram 6.png  used on input line 1029.
 
 (pdftex.def)             Requested size: 469.74588pt x 285.4152pt.
 <Part D Diagram/Diagram 7.png, id=133, 1030.85126pt x 620.3175pt>
 File: Part D Diagram/Diagram 7.png Graphic file (type png)
 <use Part D Diagram/Diagram 7.png>
-Package pdftex.def Info: Part D Diagram/Diagram 7.png  used on input line 1007.
+Package pdftex.def Info: Part D Diagram/Diagram 7.png  used on input line 1030.
 
 (pdftex.def)             Requested size: 469.74588pt x 282.67084pt.
 <Part D Diagram/Diagram 8.png, id=134, 1033.8625pt x 634.37pt>
 File: Part D Diagram/Diagram 8.png Graphic file (type png)
 <use Part D Diagram/Diagram 8.png>
-Package pdftex.def Info: Part D Diagram/Diagram 8.png  used on input line 1008.
+Package pdftex.def Info: Part D Diagram/Diagram 8.png  used on input line 1031.
 
 (pdftex.def)             Requested size: 469.76138pt x 288.24193pt.
 <Part D Diagram/Diagram 9.png, id=135, 1029.8475pt x 638.385pt>
 File: Part D Diagram/Diagram 9.png Graphic file (type png)
 <use Part D Diagram/Diagram 9.png>
-Package pdftex.def Info: Part D Diagram/Diagram 9.png  used on input line 1009.
+Package pdftex.def Info: Part D Diagram/Diagram 9.png  used on input line 1032.
 
 (pdftex.def)             Requested size: 469.7442pt x 291.18645pt.
 <Part D Diagram/Diagram 10.png, id=136, 1033.8625pt x 624.3325pt>
 File: Part D Diagram/Diagram 10.png Graphic file (type png)
 <use Part D Diagram/Diagram 10.png>
-Package pdftex.def Info: Part D Diagram/Diagram 10.png  used on input line 1010
+Package pdftex.def Info: Part D Diagram/Diagram 10.png  used on input line 1033
 .
 (pdftex.def)             Requested size: 469.76138pt x 283.68114pt.
 <Part D Diagram/Diagram 11.png, id=137, 1030.85126pt x 631.35875pt>
 File: Part D Diagram/Diagram 11.png Graphic file (type png)
 <use Part D Diagram/Diagram 11.png>
-Package pdftex.def Info: Part D Diagram/Diagram 11.png  used on input line 1011
+Package pdftex.def Info: Part D Diagram/Diagram 11.png  used on input line 1034
 .
 (pdftex.def)             Requested size: 469.74588pt x 287.7022pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 1001--1012
+Underfull \hbox (badness 10000) in paragraph at lines 1024--1035
 []
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1001--1012
+Underfull \hbox (badness 10000) in paragraph at lines 1024--1035
 []
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1001--1012
+Underfull \hbox (badness 10000) in paragraph at lines 1024--1035
 []
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1001--1012
+Underfull \hbox (badness 10000) in paragraph at lines 1024--1035
 []
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1001--1012
+Underfull \hbox (badness 10000) in paragraph at lines 1024--1035
 []
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1001--1012
+Underfull \hbox (badness 10000) in paragraph at lines 1024--1035
 []
  []
 
@@ -703,7 +703,7 @@ Package rerunfilecheck Info: File `Master.out' has not changed.
 Here is how much of TeX's memory you used:
  11109 strings out of 480313
  174871 string characters out of 5895864
- 524415 words of memory out of 5000000
+ 527688 words of memory out of 5000000
  28758 multiletter control sequences out of 15000+600000
  438238 words of font info for 55 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
@@ -718,7 +718,7 @@ ic/lm/lmr5.pfb><c:/Users/Zozi/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/pu
 blic/lm/lmtk10.pfb><c:/Users/Zozi/AppData/Roaming/TinyTeX/texmf-dist/fonts/type
 1/public/lm/lmtt10.pfb><c:/Users/Zozi/AppData/Roaming/TinyTeX/texmf-dist/fonts/
 type1/public/lm/lmtti10.pfb>
-Output written on Master.pdf (23 pages, 1564735 bytes).
+Output written on Master.pdf (23 pages, 1563481 bytes).
 PDF statistics:
  229 PDF objects out of 1000 (max. 8388607)
  162 compressed objects within 2 object streams
