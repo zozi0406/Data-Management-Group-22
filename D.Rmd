@@ -21,15 +21,6 @@ library(lubridate)
 ```
 
 ```{r}
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 
 # Read in dataframe from part C
 ratingsdata<-readRDS("C_output.rds")
@@ -47,7 +38,7 @@ db <- dbConnect(SQLite(), 'ratings.db')
 BusinessTypeId <- ratingsdata %>% select(BusinessType,BusinessTypeID) %>% distinct()
 # BusinessTypeId <- dbGetQuery(db, 'SELECT DISTINCT BusinessType,BusinessTypeID FROM dim_BusinessType;')
 
-    
+
 ui <- dashboardPage(
   
         dashboardHeader(
@@ -55,20 +46,24 @@ ui <- dashboardPage(
     
         dashboardSidebar(
           sidebarMenu(
-            menuItem("Ratings over time", tabName = "Tab1", icon = icon("th")),
-            menuItem("Sub-scores by ratings", tabName = "Tab2", icon = icon("th")),
-            menuItem("Top local authorities by rating", tabName = "Tab3", icon = icon("th"))
+            menuItem("Ratings over time", tabName = "Tab1", icon = icon("history")),
+            menuItem("Sub-scores by ratings", tabName = "Tab2", icon = icon("project-diagram")),
+            menuItem("Top local authorities by rating", tabName = "Tab3", icon = icon("map-marked"))
           )
         ),
         dashboardBody(
           tabItems(
             tabItem(tabName = "Tab1",
               fluidRow(
-                    
+                box(width=12,h2("Density of specific rating values over time based on business type"),
+                    br(),"
+                    Lower ratings (0-2) gaining more weight in the last few years.")
+              ),
+              fluidRow(
                 # Business type distribution plot
-                box(title ="Rating Value slider",
+                box(title ="Rating Value slider", width=6,
                    sliderInput(inputId = 'RatingValues','Rating Values:',0,5,2)),
-                box(title="Business Type select",
+                box(title="Business Type select", width=6,
                    selectInput(
                          inputId = 'BusinessType',
                          label = 'Business Types:',
@@ -77,49 +72,57 @@ ui <- dashboardPage(
                 ))),
               fluidRow(
                 box(width=12,
-                         plotlyOutput(
-                          outputId = 'Play1'
-                         )
-              ))),
+                   plotlyOutput(
+                    outputId = 'Play1'
+                   )
+            ))),
               
                 # Sub-score distribution tab
-                tabItem(tabName ="Tab2",
-                         fluidRow(
-                    
-                            # Business type distribution plot
-                            box(title ="Rating Value slider",
-                                     
-                                   sliderInput(
+            tabItem(tabName ="Tab2",
+                    fluidRow(
+                      box(width=12,h2("Sub-score (penalties) distributions given rating value"),
+                          br(),
+                          "Most penalties (highest sub-scores) awarded for lack of confidence in management.")
+                    ),
+                    fluidRow(
+                      # Business type distribution plot
+                      box(title ="Rating Value slider",width=12,
+                             sliderInput(
                                inputId = 'RatingValues2',
                                'Rating Values:',
                                0,
                                5,
-                               3
-                             ))),
-                        fluidRow(
-                            box(width=12,
-                               plotlyOutput(outputId = 'Play2',height = "500px",width="100%")
-                             )
-                )),
+                               1,
+                     ))),
+                     fluidRow(
+                        box(width=12,
+                           plotlyOutput(outputId = 'Play2',height = "500px",width="100%")
+                        )
+            )),
                 
                 # Local authority rating percentage tab
-                tabItem(tabName ="Tab3",
-                        fluidRow(
-                          box(title="Rating Value Slider",
-                                sliderInput(
-                               inputId = 'RatingValues3',
-                               'Rating Values:',
-                               0,
-                               5,
-                               0
-                          ))),
-                         
-                         fluidRow(
-                           box(width=12,
-                            plotlyOutput(
-                               outputId = 'Play3',height = "500px",width="100%")  
-                        ))
-                )
+            tabItem(tabName ="Tab3",
+                    fluidRow(
+                      box(width=12,h2("Local authorities with highest proportion of a rating value"),
+                          br(),
+                          "Waltham Forest has the highest proportion (4%) of establishments with a rating of 0,
+                          nearly 4 times as many as the runner-up.")
+                    ),
+                    fluidRow(
+                      box(width=12,title="Rating Value Slider",
+                          sliderInput(
+                           inputId = 'RatingValues3',
+                           'Rating Values:',
+                           0,
+                           5,
+                           0
+                      ))),
+                     fluidRow(
+                       box(width=12,
+                        plotlyOutput(
+                           outputId = 'Play3',height = "500px",width="100%")  
+                    ))
+            )
           )
         )
 )
@@ -163,6 +166,7 @@ server <- function(input, output, session) {
             #                AND D.ratingValue = $Rating
             #                GROUP BY D.ratingValue, Date.Year;'
             # ,list(Scheme="FHRS",Btype=input$BusinessType,Rating=input$RatingValues))
+            
             plt1 <- plot_ly(df,x=~year,y=~ratings_percentage) %>% layout(title="Proportion of rating value by year and Business Type")
             plt1 %>% add_lines()
         }
@@ -221,7 +225,7 @@ server <- function(input, output, session) {
             
             
             
-                        
+            
             plt2<-plot_ly(df %>% filter(Score=="Hygiene"), x=~level,y=~Frequency) %>% add_bars(name="Hygiene")
               
 
