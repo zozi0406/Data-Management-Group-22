@@ -1,7 +1,13 @@
 ---
-title: "Master"
+title: "Group 22 Data Management Parts A1(DDL and Queries), A2, B, C, D"
 output: pdf_document
 ---
+
+```{r knitr_options, include=FALSE}
+library(knitr)
+library(formatR)
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE,attr.source = ".numberLines")
+```
 
 ## A1: DDL
 
@@ -42,7 +48,7 @@ CREATE TABLE Reservation (
   Channel_id INTEGER,
   Channel_fee REAL,
   FOREIGN KEY (Guest_id) REFERENCES Guest(Guest_id),
-  FOREIGN key (Channel_id) REFERENCES Booking_channel(Channel_id)
+  FOREIGN KEY (Channel_id) REFERENCES Booking_channel(Channel_id)
 );
 
 
@@ -240,11 +246,11 @@ HAVING S.Guest_id IN (SELECT DISTINCT Guest_id FROM Reservation);
 
 ## Logical schema:
 
-INSERT LOGICAL SCHEMA
+![](Logical Schema A2-2.png)
 
 ## Queries:
 
-```{sql A2Queries, eval=FALSE}
+```{sql A2Queries, eval=FALSE,warning=FALSE}
 -- How many customers have stopped bringing their cars after the first encounter with the dealer ?
 
 -- Assuming Customers have only one car
@@ -274,7 +280,7 @@ GROUP BY Service_id
 
 # Part B 
 
-```{r B_packages}
+```{r B_packages, echo=FALSE,message=FALSE,warning=FALSE}
 library(tidyverse)
 library(readxl)
 ```
@@ -339,7 +345,7 @@ productrecords <- fulldata %>% group_by(product) %>% summarise(records=n())
 
 # Part C
 
-```{r C_packages}
+```{r C_packages,echo=FALSE,warning=FALSE,message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(xml2)
 library(tidyverse)
@@ -462,7 +468,7 @@ RSQLite::dbDisconnect(con)
 
 # Part D
 
-```{r D_packages}
+```{r D_packages, echo=FALSE,warning=FALSE,message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(DBI)
 library(RSQLite)
@@ -737,6 +743,6 @@ server <- function(input, output, session) {
 
 # Complete app with UI and server components (commented out to allow for running through when knitting)
 #shinyApp(ui, server)
-dbDisconnect(db)
+#dbDisconnect(db)
 ```
 

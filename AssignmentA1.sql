@@ -35,7 +35,7 @@ CREATE TABLE Reservation (
   Channel_id INTEGER,
   Channel_fee REAL,
   FOREIGN KEY (Guest_id) REFERENCES Guest(Guest_id),
-  FOREIGN key (Channel_id) REFERENCES Booking_channel(Channel_id)
+  FOREIGN KEY (Channel_id) REFERENCES Booking_channel(Channel_id)
 );
 
 
