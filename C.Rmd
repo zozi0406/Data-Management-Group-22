@@ -30,13 +30,11 @@ dir.create("xmldata",showWarnings = F)
 #Create empty list to store dataframes
 xmldatalist=list()
 
-
 #Create SQLite connection
 con<-RSQLite::dbConnect(RSQLite::SQLite(),"ratings.db")
 
-
 #Around 10 minutes runtime excl. download
-if (!RSQLite::dbExistsTable(con,"fact_Rating")) {
+if (!RSQLite::dbExistsTable(con,"fact_Rating")&!file.exists("C_output.rds")) {
   for (i in 1:length(xmllinks)) {
     
     #Get link based on loop variable.
@@ -61,6 +59,7 @@ if (!RSQLite::dbExistsTable(con,"fact_Rating")) {
     
     #Find the names of the populated fields for every node
     nodenames<-xml_children(nodes) %>% xml_name
+    
     #Find the values of the populated fields for every node
     nodevalues<-xml_children(nodes) %>% xml_text %>% trimws
     
@@ -119,18 +118,11 @@ if (!RSQLite::dbExistsTable(con,"fact_Rating")) {
   
   saveRDS(ratingsdata,"C_output.rds")
 } else {
-  
   ratingsdata<-readRDS("C_output.rds")
 } 
 
-
-
-
 #Disconnect from database
 RSQLite::dbDisconnect(con)
-
-
-
 ```
 
 
